@@ -35,5 +35,7 @@ uvms.Jt_v = [zeros(3) eye(3); eye(3) -skew(uvms.vTt(1:3,4))];
 % juxtapose the two Jacobians to obtain the global one
 uvms.Jt = [uvms.Jt_a uvms.Jt_v];
 
+% vehicle position Jacobian projected on <w>
+uvms.Jgv = [zeros(3,7) -uvms.wTv(1:3,1:3) zeros(3)];
 
 end

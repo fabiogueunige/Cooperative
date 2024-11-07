@@ -28,8 +28,8 @@ pipe_radius = 0.3;
 rock_center = [12.2025   37.3748  -39.8860]'; % in world frame coordinates
 
 % UDP Connection with Unity viewer v2
-uArm = udp('127.0.0.1',15000,'OutputDatagramPacketSize',28);
-uVehicle = udp('127.0.0.1',15001,'OutputDatagramPacketSize',24);
+uArm = udpport('127.0.0.1',15000,'OutputDatagramPacketSize',28);
+uVehicle = udpport('127.0.0.1',15001,'OutputDatagramPacketSize',24);
 fopen(uVehicle);
 fopen(uArm);
 uAltitude = dsp.UDPReceiver('LocalIPPort',15003,'MessageDataType','single');
@@ -57,6 +57,11 @@ uvms.goalPosition = [12.2025   37.3748  -39.8860]';
 uvms.wRg = rotation(0, pi, pi/2);
 uvms.wTg = [uvms.wRg uvms.goalPosition; 0 0 0 1];
 
+% defines the goal position for the vehicle position task
+uvms.vehicleGoalPosition = [10.5 37.5 -38]';
+uvms.wRgv = rotation(0, 0, 0);
+uvms.wTgv = [uvms.wRgv uvms.vehicleGoalPosition; 0 0 0 1];
+
 % defines the tool control point
 uvms.eTt = eye(4);
 
@@ -82,7 +87,8 @@ for t = 0:deltat:end_time
     % the sequence of iCAT_task calls defines the priority
     %[Qp, ydotbar] = iCAT_task(uvms.A.t,    uvms.Jt,    Qp, ydotbar, uvms.xdot.t,  0.0001,   0.01, 10);
     
-    [....]
+    [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
+    
     [Qp, ydotbar] = iCAT_task(eye(13),     eye(13),    Qp, ydotbar, zeros(13,1),  0.0001,   0.01, 10);    % this task should be the last one
     
     % get the two variables for integration
@@ -107,7 +113,8 @@ for t = 0:deltat:end_time
     % add debug prints here
     if (mod(t,0.1) == 0)
         t
-        uvms.sensorDistance
+        %uvms.sensorDistance
+        uvms.xdot.gv'
     end
 
     % enable this to have the simulation approximately evolving like real
@@ -118,6 +125,6 @@ end
 fclose(uVehicle);
 fclose(uArm);
 
-PrintPlot(plt);
+%PrintPlot(plt);
 
 end
