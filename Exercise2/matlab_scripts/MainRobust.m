@@ -28,8 +28,8 @@ pipe_radius = 0.3;
 rock_center = [12.2025   37.3748  -39.8860]'; % in world frame coordinates
 
 % UDP Connection with Unity viewer v2
-uArm = udpport('127.0.0.1',15000,'OutputDatagramPacketSize',28);
-uVehicle = udpport('127.0.0.1',15001,'OutputDatagramPacketSize',24);
+uArm = udp('127.0.0.1',15000,'OutputDatagramPacketSize',28);
+uVehicle = udp('127.0.0.1',15001,'OutputDatagramPacketSize',24);
 fopen(uVehicle);
 fopen(uArm);
 uAltitude = dsp.UDPReceiver('LocalIPPort',15003,'MessageDataType','single');
@@ -58,12 +58,17 @@ uvms.wRg = rotation(0, pi, pi/2);
 uvms.wTg = [uvms.wRg uvms.goalPosition; 0 0 0 1];
 
 % defines the goal position for the vehicle position task
-uvms.vehicleGoalPosition = [10.5 37.5 -38]';
+uvms.vehicleGoalPosition = [12.2025 37.3748 -39.8860]';
 uvms.wRgv = rotation(0, 0, 0);
 uvms.wTgv = [uvms.wRgv uvms.vehicleGoalPosition; 0 0 0 1];
 
 % defines the tool control point
 uvms.eTt = eye(4);
+
+uvms = ReceiveUdpPackets(uvms, uAltitude);
+w_kw = [0 0 1]';
+v_kw = uvms.vTw(1:3,1:3) * w_kw;
+uvms.altitude = v_kw' * [0 0 uvms.sensorDistance]';
 
 tic
 for t = 0:deltat:end_time
@@ -75,6 +80,9 @@ for t = 0:deltat:end_time
     
     % receive altitude information from unity
     uvms = ReceiveUdpPackets(uvms, uAltitude);
+    w_kw = [0 0 1]';
+    v_kw = uvms.vTw(1:3,1:3) * w_kw;
+    uvms.altitude = v_kw' * [0 0 uvms.sensorDistance]';
     
     % main kinematic algorithm initialization
     % ydotbar order is [qdot_1, qdot_2, ..., qdot_7, xdot, ydot, zdot, omega_x, omega_y, omega_z]
@@ -87,6 +95,7 @@ for t = 0:deltat:end_time
     % the sequence of iCAT_task calls defines the priority
     %[Qp, ydotbar] = iCAT_task(uvms.A.t,    uvms.Jt,    Qp, ydotbar, uvms.xdot.t,  0.0001,   0.01, 10);
     
+    [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
     [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
     
     [Qp, ydotbar] = iCAT_task(eye(13),     eye(13),    Qp, ydotbar, zeros(13,1),  0.0001,   0.01, 10);    % this task should be the last one
@@ -114,7 +123,8 @@ for t = 0:deltat:end_time
     if (mod(t,0.1) == 0)
         t
         %uvms.sensorDistance
-        uvms.xdot.gv'
+        %uvms.xdot.gv'
+        uvms.A.ma
     end
 
     % enable this to have the simulation approximately evolving like real

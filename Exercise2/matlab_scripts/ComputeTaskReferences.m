@@ -11,3 +11,5 @@ uvms.xdot.t(4:6) = Saturate(uvms.xdot.t(4:6), 0.2);
 w_vehicle_target_distance = uvms.wTgv(1:3,4) - uvms.wTv(1:3,4);
 uvms.xdot.gv = -0.6 * w_vehicle_target_distance;
 uvms.xdot.gv = Saturate(uvms.xdot.gv, 0.8);
+
+uvms.xdot.ma = 0.2 * (3 - uvms.altitude);
