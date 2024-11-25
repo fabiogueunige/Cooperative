@@ -1,6 +1,6 @@
+% ComputeActivationFunctions
+% Computes activation matrices for each task based on mission priorities
 function [uvms] = ComputeActivationFunctions(uvms, mission)
-% compute the activation functions here
-
-% arm tool position control
-% always active
-uvms.A.t = eye(6);
+    % Tool-frame position control activation (always active)
+    uvms.A.t = eye(6); % Full activation for tool-frame control
+end
