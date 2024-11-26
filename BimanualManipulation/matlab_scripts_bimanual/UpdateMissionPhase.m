@@ -1,6 +1,6 @@
 function [pandaArm, mission] = UpdateMissionPhase(pandaArm, mission)    
         switch mission.phase
-            case 1  %Go To Grasping Points
+            case 1  % Go To Grasping Points
                 % computing the errors for the go-to action defining tasks
                 
                 % max error: 1/10 cm and 1deg

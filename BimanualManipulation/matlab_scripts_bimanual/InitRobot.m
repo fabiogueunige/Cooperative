@@ -28,7 +28,8 @@ function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
     
     %% ... TO HERE
     % Init Task Reference vectors
-    
+    % rho = 0
+    % Qo = 0
     % Init Activation function for activate or deactivate tasks
     
     
