@@ -5,8 +5,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     gain = 0.2; % our choice (constant)
     delta = 0.05;
     min_alt = 0.15; % giarda se vanno definiti fuori
-    pandaArm.ArmL.xdot.alt = gain * ((delta + min_alt) - pandaArm.ArmL.wTt(3,4));
-    pandaArm.ArmR.xdot.alt = gain * ((delta + min_alt) - pandaArm.ArmR.wTt(3,4));
+    pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [ 0; 0; gain];
+    pandaArm.ArmR.xdot.alt = ((delta + min_alt) - pandaArm.ArmR.wTt(3,4)) * [ 0; 0; gain];
     
     % Compute joint limits task reference ALWAYS
     % Create a velocity away from the limits => move to the middle between jlmax and jlmin
@@ -16,8 +16,11 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     jlmin = [-2.8973;-1.7628;-2.8973;-3.0718;-2.8973;-0.0175;-2.8973];
     jlmax = [2.8973;1.7628;2.8973;-0.0698;2.8973;3.7525;2.8973];
 
-    pandaArm.ArmL.xdot.jl = gain .* (jlmax + ((jlmax - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
-    pandaArm.ArmR.xdot.jl = gain .* (jlmax + ((jlmax - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
+    pandaArm.ArmL.xdot.jl.max = gain .* (jlmax + ((jlmax - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
+    pandaArm.ArmR.xdot.jl.max = gain .* (jlmax + ((jlmax - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
+
+    pandaArm.ArmL.xdot.jl.min = gain .* (jlmin + ((jlmin - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
+    pandaArm.ArmR.xdot.jl.min = gain .* (jlmin + ((jlmin - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
     
     switch mission.phase
         case 1 

@@ -27,14 +27,21 @@ pandaArm.ArmR.bJe = geometricJacobian(pandaArm.ArmR.franka, ...
     [pandaArm.ArmR.q',0,0],'panda_link7');%DO NOT EDIT
 
 % Top three rows are angular velocities, bottom three linear velocities
-pandaArm.ArmL.wJt  = ...;
-pandaArm.ArmR.wJt  = ...;
+pandaArm.ArmL.eSt = [eye(3) zeros(3); -skew(pandArm.ArmL.wTe(1:3,1:3) * pandArm.ArmL.eTt(1:3,4)) eye(3)];
+pandaArm.ArmR.eSt = [eye(3) zeros(3); -skew(pandArm.ArmR.wTe(1:3,1:3) * pandArm.ArmR.eTt(1:3,4)) eye(3)];
+%jacobian from <w> to <t>: rigid-body_jabobian * wJe (wJe --> moltiplico bJe_linear per wRb e poi bJe_angular per wRb)
+pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [wTb_left(1:3,1:3) zeros(3,3); zeros(3,3) wTb_left(1:3,1:3)] * pandaArm.ArmL.bJe;
+pandaArm.ArmR.wJt  = pandaArm.ArmR.eSt * [wTb_right(1:3,1:3) zeros(3,3); zeros(3,3) wTb_right(1:3,1:3)] * pandaArm.ArmR.bJe;
 
 if (mission.phase == 2)
     pandaArm.ArmL.wJo = ...; 
     pandaArm.ArmR.wJo = ...;
 
 % Common Jacobians
-pandaArm.Jjl = ...;
+%minimum altitude
+pandaArm.ArmL.Jma = pandaArm.ArmL.wJt(6,:);
+pandaArm.ArmR.Jma = pandaArm.ArmR.wJt(6,:);
+% joint limits
+pandaArm.Jjl = 
 
 end

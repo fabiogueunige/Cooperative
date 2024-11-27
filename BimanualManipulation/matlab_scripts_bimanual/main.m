@@ -37,7 +37,7 @@ wTb_right (1:3,4) = [1.06; -0.01; 0];
 
 
 plt = InitDataPlot(maxloops);
-pandaArms = InitRobot(model,wTb_left,wTb_right);
+pandaArms = InitRobot(model,wTb1,wTb2);
 % Init object and tools frames
 obj_length = 0.1;
 w_obj_pos = [0.5 0 0.59]';
@@ -82,12 +82,13 @@ mission.phase_time = 0;
 % Define the active tasks for each phase of the mission
 % Suggested Name for the task
 % T = move tool task
-% JL = joint limits task
+% JLM = joint limits task max
+% JLm = joint limits task min
 % MA = minimum altitude task
 % RC = rigid constraint task
-mission.actions.go_to.tasks = [JL MA T]; % case 1
-mission.actions.coop_manip.tasks = [JL MA RC T]; % case 2
-mission.actions.end_motion.tasks = [JL MA RC]; % case 3
+mission.actions.go_to.tasks = [...];
+mission.actions.coop_manip.tasks = [...];
+mission.actions.end_motion.tasks = [...];
 
 %% CONTROL LOOP
 disp('STARTED THE SIMULATION');
@@ -201,4 +202,4 @@ for t = 0:dt:Tf
 end
 
 PrintPlot(plt, pandaArms);
-
+end
