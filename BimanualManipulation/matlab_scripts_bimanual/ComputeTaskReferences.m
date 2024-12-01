@@ -50,7 +50,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % COMMON
             % -----------------------------------------------------------------
             % Rigid Grasp Constraint
-            pandaArm.xdot.rc = ...;
+            %pandaArm.xdot.rc = ...;
     
             % LEFT ARM
             % -----------------------------------------------------------------        
@@ -67,21 +67,21 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             [ang, lin] = CartError();
             pandaArm.ArmR.xdot.tool = ...;
             % limit the requested velocities...
-            pandaArm.ArmR.xdot.tool(1:3) = Saturate();
-            pandaArm.ArmR.xdot.tool(4:6) = Saturate();
+            %pandaArm.ArmR.xdot.tool(1:3) = Saturate();
+            %pandaArm.ArmR.xdot.tool(4:6) = Saturate();
         case 3
             % Stop any motions
             % LEFT ARM
             % -----------------------------------------------------------------
             % Tool position and orientation task reference
-            pandaArm.ArmL.xdot.tool(1:3) = ...;
-            pandaArm.ArmL.xdot.tool(4:6) = ...;
+            %pandaArm.ArmL.xdot.tool(1:3) = ...;
+            %pandaArm.ArmL.xdot.tool(4:6) = ...;
     
             % RIGHT ARM
             % -----------------------------------------------------------------
             % Tool position and orientation task reference
-            pandaArm.ArmR.xdot.tool(1:3) = ...;
-            pandaArm.ArmR.xdot.tool(4:6) = ...;
+            %pandaArm.ArmR.xdot.tool(1:3) = ...;
+            %pandaArm.ArmR.xdot.tool(4:6) = ...;
     end
 end
 

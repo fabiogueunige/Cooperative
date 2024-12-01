@@ -35,10 +35,10 @@ pandaArm.ArmR.eSt = [eye(3) zeros(3); -skew(pandArm.ArmR.wTe(1:3,1:3) * pandArm.
 pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [wTb_left(1:3,1:3) zeros(3,3); zeros(3,3) wTb_left(1:3,1:3)] * pandaArm.ArmL.bJe;
 pandaArm.ArmR.wJt  = pandaArm.ArmR.eSt * [wTb_right(1:3,1:3) zeros(3,3); zeros(3,3) wTb_right(1:3,1:3)] * pandaArm.ArmR.bJe;
 
-if (mission.phase == 2)
-    pandaArm.ArmL.wJo = ...; 
-    pandaArm.ArmR.wJo = ...;
-
+%if (mission.phase == 2)
+    %pandaArm.ArmL.wJo = ...; 
+    %pandaArm.ArmR.wJo = ...;
+%end
 %% Common Jacobians
 
 %minimum altitude
@@ -46,7 +46,8 @@ pandaArm.ArmL.Jma = pandaArm.ArmL.wJt(6,:); % row vector containing only the z l
 pandaArm.ArmR.Jma = pandaArm.ArmR.wJt(6,:);
 
 % joint limits
-pandaArm.ArmL.Jjl = pandaArm.ArmL.wJt(1:3, :); % consider only the angular part of the jacobian
-pandaArm.ArmR.Jjl = pandaArm.ArmR.wJt(1:3, :); % consider only the angular part of the jacobian
+% consider only the z angular axis of the joint
+pandaArm.ArmL.Jjl = pandaArm.ArmL.wJt(3, :); % consider only the angular part of the jacobian
+pandaArm.ArmR.Jjl = pandaArm.ArmR.wJt(3, :); % consider only the angular part of the jacobian
 
 end

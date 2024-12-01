@@ -86,8 +86,8 @@ mission.phase_time = 0;
 % MA = minimum altitude task
 % RC = rigid constraint task
 mission.actions.go_to.tasks = [JL, MA, T];
-mission.actions.coop_manip.tasks = [...];
-mission.actions.end_motion.tasks = [...];
+%mission.actions.coop_manip.tasks = [...];
+%mission.actions.end_motion.tasks = [...];
 
 %% CONTROL LOOP
 disp('STARTED THE SIMULATION');
@@ -149,30 +149,56 @@ for t = 0:dt:Tf
     % ...
     % Task: Tool Move-To
     %
-    % MINIMUM ALTITUDE
-    A = zeros(12,12);
-    A (7, 7) = pandaArm.ArmL.A.ma;
-    A (14, 14) = 
-    J = zeros(6,14);
-    J(6,1:7) = pandaArm.ArmL.Jma;
-    J(6,8:14) = pandaArm.ArmR.Jma;
-    ydotbar = zeros(14,1);
-    Qp = eye(14);
-    
-    xdot = 
-    iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight)
-    
+    %% EXAMPLE 
     %[Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.ma, Jma,    ...
     %                           Qp, ydotbar, zeros(14,1),  ...
     %                          0.0001,   0.01, 10);
     %iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight)
     
 
-    % JOINT LIMIT
+    %% MINIMUM ALTITUDE
+    % we have two task of dimension 6, we consider here the all robot dof. so A = 12 x 12
+    A = zeros(12,12);
+    A (6, 6) = pandaArm.ArmL.A.ma;
+    A (12, 12) = pandaArm.ArmR.A.ma;
+    % J = m x 14, m = row dimension of the task = 12 
+    J = zeros(12,14);
+    J(6,1:7) = pandaArm.ArmL.Jma;
+    J(12,8:14) = pandaArm.ArmR.Jma;
+    Qold = Qp;   
+    rhoold = ydotbar;
+    % xdot has 12 row, angular and linear velcoity of the two manipulator
+    xdot = zeros(12);
+    xdot(1:6) = pandaArm.ArmL.xdot.alt;
+    xdot(7:12) = pandaArm.ArmR.xdot.alt;
+    % values poassed by default
+    lambda = 0.0001;
+    threshold = 0.01;
+    weight = 10;
+    iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight)
+    
+    %% JOINT LIMIT
+    % we have 14 task, of one dimension each. Because we act directly on
+    % the single joint velocity
     A = zeros(14,14);
     A(1:7,1:7) = pandaArm.ArmL.A.jl;
     A(8:14,8:14) = pandaArm.ArmR.A.jl;
-    
+    % in this case m = 14, in this case the jacobian is a diagonal matrix,
+    % same shape of A, because x_ref = 14, the speed reference, so we are
+    % mapping directly the speed of the joint, not all the 6dof of each
+    % manipulator
+    J = zeros(14,14);
+    for k = 1:7
+        J(k,k) =  pandaArm.ArmL.Jjl(k);
+    end
+    for p = (8:14)
+        J(p) = pandaArm.ArmR.Jjl(k);
+    end
+
+    %% GRASPING TASK
+
+
+    %% LAST TASK
     [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
         Qp, ydotbar, zeros(14,1),  ...
         0.0001,   0.01, 10);    % this task should be the last one
