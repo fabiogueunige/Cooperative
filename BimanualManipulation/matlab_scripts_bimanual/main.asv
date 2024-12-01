@@ -37,7 +37,7 @@ wTb_right (1:3,4) = [1.06; -0.01; 0];
 
 
 plt = InitDataPlot(maxloops);
-pandaArm = InitRobot(model,wTb1,wTb2);
+pandaArm = InitRobot(model,wTb_left,wTb_right);
 % Init object and tools frames
 obj_length = 0.12;
 w_obj_pos = [0.5 0 0.59]';
@@ -64,9 +64,9 @@ pandaArm.ArmR.wTt = wTb_right * pandaArm.ArmR.bTe * pandaArm.ArmR.eTt;
 w_obj_g_left = [0.44 0 0.59]';
 w_obj_g_right = [0.56 0 0.59]';
 % the tool should rotate of 30 deg on y axis to reach goal orientation
-pandaArm.ArmL.wTg(1:3, 1:3) = pandaArm.ArmL.wTt * rotation(0, pi/6, 0);
+pandaArm.ArmL.wTg(1:3, 1:3) = pandaArm.ArmL.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmL.wTg (1:3, 4) = w_obj_g_left;
-pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt * rotation(0, pi/6, 0);
+pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
 
 % Second goal move the object
@@ -85,7 +85,7 @@ mission.phase_time = 0;
 % JL = joint limits task
 % MA = minimum altitude task
 % RC = rigid constraint task
-mission.actions.go_to.tasks = [JL, MA, T];
+% mission.actions.go_to.tasks = [JL, MA, T];
 %mission.actions.coop_manip.tasks = [...];
 %mission.actions.end_motion.tasks = [...];
 
@@ -169,13 +169,13 @@ for t = 0:dt:Tf
     rhoold = ydotbar;
     % xdot has 12 row, angular and linear velcoity of the two manipulator
     xdot = zeros(12);
-    xdot(1:6) = pandaArm.ArmL.xdot.alt;
-    xdot(7:12) = pandaArm.ArmR.xdot.alt;
+    xdot(4:6) = pandaArm.ArmL.xdot.alt;
+    xdot(10:12) = pandaArm.ArmR.xdot.alt;
     % values poassed by default
     lambda = 0.0001;
     threshold = 0.01;
     weight = 10;
-    iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight)
+    [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
     
     %% JOINT LIMIT
     % we have 14 task, of one dimension each. Because we act directly on
@@ -194,10 +194,19 @@ for t = 0:dt:Tf
     for p = (8:14)
         J(p) = pandaArm.ArmR.Jjl(k);
     end
+    
+    [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
     %% GRASPING TASK
+    A = eye(12);
+    % 12 row, 6 ang vel, 6 lin vel 
+    J = zeroes(12 ,14);
+    J(1:7,1:7) =  
+
+    [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
 
+    
     %% LAST TASK
     [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
         Qp, ydotbar, zeros(14,1),  ...
@@ -251,4 +260,3 @@ for t = 0:dt:Tf
 end
 
 PrintPlot(plt, pandaArm);
-end
