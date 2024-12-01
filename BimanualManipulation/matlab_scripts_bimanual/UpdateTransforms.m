@@ -10,12 +10,12 @@ function [pandaArm] = UpdateTransforms(pandaArm, mission)
         [pandaArm.ArmR.q',0,0],'panda_link7');%DO NOT EDIT
     
     % <e> to <w>
-    pandaArm.ArmL.wTe = ...;
-    pandaArm.ArmR.wTe = ...;
+    pandaArm.ArmL.wTe = pandaArm.ArmL.wTb*pandaArm.ArmL.bTe;
+    pandaArm.ArmR.wTe = pandaArm.ArmR.wTb*pandaArm.ArmR.bTe;
     
     % Transformation matrix from <t> to <w>
-    pandaArm.ArmL.wTt = ...;
-    pandaArm.ArmR.wTt = ...;
+    pandaArm.ArmL.wTt = wTb_left * pandaArm.ArmL.bTe * pandaArm.ArmL.eTt;
+    pandaArm.ArmR.wTt = wTb_right * pandaArm.ArmR.bTe * pandaArm.ArmR.eTt;
     
     % <o> to <w> : ASSUME <t> = <g> during entire cooperation phase
     if (mission.phase == 2)

@@ -1,10 +1,11 @@
 function [pandaArm] = ComputeActivationFunctions(pandaArm, mission)
+% A define the activation task, so it is connected to the lenght of xdot reference fot each task 
 
 % EQUALITY TASK ACTIVATION
 switch mission.phase
     case 1  % Reach the grasping point
         % Move-To
-         pandaArm.A.tool = ...;
+         pandaArm.A.tool = 1 ;%* ActionTransition(taskname, previous, current, mission.phase_time);
     case 2 % Move the object holding it firmly
         % Rigid Grasp Constraint
         
@@ -13,15 +14,22 @@ switch mission.phase
     case 3 % STOP any motion 
         
 end
-% INEQUALITY TASK ACTIVATION
+%% INEQUALITY TASK ACTIVATION
 % Minimum Altitude Task ( > 0.15m, 0.05m delta )
-pandaArm.A.ma = ...;
+pandaArm.ArmL.A.ma = DecreasingBellShapedFunction(0.15, 0.2, 0, 1, pandaArm.ArmL.wTt(3, 4)); % x = position on z-axis
+pandaArm.ArmR.A.ma = DecreasingBellShapedFunction(0.15, 0.2, 0, 1, pandaArm.ArmR.wTt(3, 4));
 
 % Joint Limits Task
 % Activation function: two combined sigmoids, which are at their maximum 
 % at the joint limits and approach zero between them    
 % Safety Task (inequality)
 % delta is 10% of max error
-pandaArm.A.jl = ...;
+pandaArm.ArmL.A.jl = zeros(7, 7); % matrix with on diagonal all the sigmoids
+for k = 1:7
+    % set a matix with on diagonal sum of two sigmoid, one for the maximum
+    % limit and one for the minimum joints limit
+    pandaArm.ArmL.A.jl(k,k) = DecreasingBellShapedFunction(jlmin(k), Jlmin(k) + ((jlmin(k) - pandaArm.ArmL.q(k)) .* 0.1) * Jlmin(k), 0, 1, pandaArm.ArmL.wTt(3, 4)) ...
+        + IncreasingBellShapedFunction(jlmax(k), Jlmax(k) + ((jlmax(k) - pandaArm.ArmL.q(k)) .* 0.1) * Jlmax(k), 0, 1, pandaArm.ArmL.wTt(3, 4));
+end
 
 end

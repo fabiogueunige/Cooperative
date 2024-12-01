@@ -1,20 +1,20 @@
 function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     % Compute distance between tools for plotting
     pandaArm.dist_tools = norm(pandaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4));
-    % Compute minimum altitude reference ALWAYS = gain ((min_alt + delta) - altitude)
+
+    %% Compute minimum altitude reference ALWAYS = gain ((min_alt + delta) - altitude)
     gain = 0.2; % our choice (constant)
     delta = 0.05;
     min_alt = 0.15; % giarda se vanno definiti fuori
-    pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [ 0; 0; gain];
+
+    pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [ 0; 0; gain];% generate a positive velocity, according with x-axis, before minimum altitude task is inactive
     pandaArm.ArmR.xdot.alt = ((delta + min_alt) - pandaArm.ArmR.wTt(3,4)) * [ 0; 0; gain];
     
-    % Compute joint limits task reference ALWAYS
+    %% Compute joint limits task reference ALWAYS
     % Create a velocity away from the limits => move to the middle between jlmax and jlmin
 
     % joint limits corresponding to the actual Panda by Franka arm configuration
     % (preso da init robot), controlla -> delta is 10% of jl - pos Joint
-    jlmin = [-2.8973;-1.7628;-2.8973;-3.0718;-2.8973;-0.0175;-2.8973];
-    jlmax = [2.8973;1.7628;2.8973;-0.0698;2.8973;3.7525;2.8973];
 
     pandaArm.ArmL.xdot.jl.max = gain .* (jlmax + ((jlmax - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
     pandaArm.ArmR.xdot.jl.max = gain .* (jlmax + ((jlmax - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
@@ -28,7 +28,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % LEFT ARM
             % -----------------------------------------------------------------
             % Tool position and orientation task reference
-            [ang, lin] = CartError(pandaArms.ArmL.wTt, pandaArms.ArmL.wTg); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
+            [ang, lin] = CartError(pandaArm.ArmL.wTt, pandaArm.ArmL.wTg); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
            
             pandaArm.ArmL.xdot.tool = gain * [ang, lin];
             % limit the requested velocities...
@@ -38,9 +38,9 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % RIGHT ARM
             % -----------------------------------------------------------------
             % Tool position and orientation task reference
-            [ang, lin] = CartError(pandaArms.ArmR.wTt, pandaArms.ArmR.wTg);
+            [ang, lin] = CartError(pandaArm.ArmR.wTt, pandaArm.ArmR.wTg);
            
-            pandaArm.ArmR.xdot.tool = ...;
+            pandaArm.ArmL.xdot.tool = gain * [ang, lin];
             % limit the requested velocities...
             pandaArm.ArmR.xdot.tool(1:3) = Saturate();
             pandaArm.ArmR.xdot.tool(4:6) = Saturate();
