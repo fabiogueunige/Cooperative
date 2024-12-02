@@ -181,7 +181,7 @@ for t = 0:dt:Tf
     % %% JOINT LIMIT
     % % we have 14 task, of one dimension each. Because we act directly on
     % % the single joint velocity
-    % A = zeros(14,14);
+    % A = zeros(12,12);
     % A(1:7,1:7) = pandaArm.ArmL.A.jl;
     % A(8:14,8:14) = pandaArm.ArmR.A.jl;
     % % in this case m = 14, in this case the jacobian is a diagonal matrix,

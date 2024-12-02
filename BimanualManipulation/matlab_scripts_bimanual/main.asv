@@ -176,32 +176,35 @@ for t = 0:dt:Tf
     threshold = 0.01;
     weight = 10;
     [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
-    
-    %% JOINT LIMIT
-    % we have 14 task, of one dimension each. Because we act directly on
-    % the single joint velocity
-    A = zeros(14,14);
-    A(1:7,1:7) = pandaArm.ArmL.A.jl;
-    A(8:14,8:14) = pandaArm.ArmR.A.jl;
-    % in this case m = 14, in this case the jacobian is a diagonal matrix,
-    % same shape of A, because x_ref = 14, the speed reference, so we are
-    % mapping directly the speed of the joint, not all the 6dof of each
-    % manipulator
-    J = zeros(14,14);
-    for k = 1:7
-        J(k,k) =  pandaArm.ArmL.Jjl(k);
-    end
-    for p = (8:14)
-        J(p) = pandaArm.ArmR.Jjl(k);
-    end
-    
-    [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
+    Qold % dim = 14 x 14
+    rhoold % dim 12 x 14
+    % %% JOINT LIMIT
+    % % we have 14 task, of one dimension each. Because we act directly on
+    % % the single joint velocity
+    % A = zeros(14,14);
+    % A(1:7,1:7) = pandaArm.ArmL.A.jl;
+    % A(8:14,8:14) = pandaArm.ArmR.A.jl;
+    % % in this case m = 14, in this case the jacobian is a diagonal matrix,
+    % % same shape of A, because x_ref = 14, the speed reference, so we are
+    % % mapping directly the speed of the joint, not all the 6dof of each
+    % % manipulator
+    % J = zeros(14,14);
+    % for k = 1:7
+    %     J(k,k) =  pandaArm.ArmL.Jjl(k);
+    % end
+    % for p = (8:14)
+    %     J(p) = pandaArm.ArmR.Jjl(k);
+    % end
+    % xdot = zeros(14);
+    % 
+    % [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
     %% GRASPING TASK
     A = eye(12);
     % 12 row, 6 ang vel, 6 lin vel 
-    J = zeroes(12 ,14);
-    J(1:7,1:7) =  
+    J = zeros(12 ,14);
+    J(1:6,1:7) =  pandaArm.ArmL.bJe;
+    J(7:12,8:14) =  pandaArm.ArmR.bJe;
 
     [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
