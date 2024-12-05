@@ -24,7 +24,7 @@ pandaArm.ArmR.A.ma = DecreasingBellShapedFunction(0.15, 0.2, 0, 1, pandaArm.ArmR
 % at the joint limits and approach zero between them    
 % Safety Task (inequality)
 % delta is 10% of max error
-pandaArm.ArmL.A.jl = zeros(7, 7); % matrix with on diagonal all the sigmoids
+pandaArm.ArmL.A.jl = zeros(6, 7); % matrix with on diagonal all the sigmoids
 for k = 1:7
     % set a matix with on diagonal sum of two sigmoid, one for the maximum
     % limit and one for the minimum joints limit

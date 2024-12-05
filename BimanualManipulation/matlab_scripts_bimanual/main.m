@@ -159,8 +159,8 @@ for t = 0:dt:Tf
     %% MINIMUM ALTITUDE
     % we have two task of dimension 6, we consider here the all robot dof. so A = 12 x 12
     A = zeros(12,12);
-    A (6, 6) = pandaArm.ArmL.A.ma;
-    A (12, 12) = pandaArm.ArmR.A.ma;
+    A (1, 6) = pandaArm.ArmL.A.ma;
+    A (1, 12) = pandaArm.ArmR.A.ma;
     % J = m x 14, m = row dimension of the task = 12 
     J = zeros(12,14);
     J(6,1:7) = pandaArm.ArmL.Jma;
@@ -168,7 +168,7 @@ for t = 0:dt:Tf
     Qold = Qp;   
     rhoold = ydotbar;
     % xdot has 12 row, angular and linear velcoity of the two manipulator
-    xdot = zeros(12);
+    xdot = zeros(12); % 12 x 1 
     xdot(4:6) = pandaArm.ArmL.xdot.alt;
     xdot(10:12) = pandaArm.ArmR.xdot.alt;
     % values poassed by default
@@ -176,12 +176,15 @@ for t = 0:dt:Tf
     threshold = 0.01;
     weight = 10;
     [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
-    Qold % dim = 14 x 14
-    rhoold % dim 12 x 14
+   
+    %Qold % dim = 14 x 14
+    %rhoold % dim 12 x 14
+    pandaArm.ArmL.wTt(1:3, 4) % print the distance of tool w.r.t. world
+
     % %% JOINT LIMIT
     % % we have 14 task, of one dimension each. Because we act directly on
     % % the single joint velocity
-    % A = zeros(12,12);
+    %A = zeros(12,12);
     % A(1:7,1:7) = pandaArm.ArmL.A.jl;
     % A(8:14,8:14) = pandaArm.ArmR.A.jl;
     % % in this case m = 14, in this case the jacobian is a diagonal matrix,
@@ -197,11 +200,11 @@ for t = 0:dt:Tf
     % end
     % xdot = zeros(14);
     % 
-    % [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
+    %[Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
     %% GRASPING TASK
     A = eye(12);
-    % 12 row, 6 ang vel, 6 lin vel 
+    %12 row, 6 ang vel, 6 lin vel 
     J = zeros(12 ,14);
     J(1:6,1:7) =  pandaArm.ArmL.bJe;
     J(7:12,8:14) =  pandaArm.ArmR.bJe;

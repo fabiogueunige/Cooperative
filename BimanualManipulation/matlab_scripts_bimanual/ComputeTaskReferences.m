@@ -18,7 +18,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
 
     pandaArm.ArmL.xdot.jl.max = gain .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
     pandaArm.ArmR.xdot.jl.max = gain .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
-
+    
     pandaArm.ArmL.xdot.jl.min = gain .* (pandaArm.jlmin + ((pandaArm.jlmin - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
     pandaArm.ArmR.xdot.jl.min = gain .* (pandaArm.jlmin + ((pandaArm.jlmin - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
     
