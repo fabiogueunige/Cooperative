@@ -37,7 +37,7 @@ wTb_right (1:3,4) = [1.06; -0.01; 0];
 
 
 plt = InitDataPlot(maxloops);
-pandaArm = InitRobot(model,wTb_left,wTb_right);
+pandaArm = InitRobot(model, wTb_left, wTb_right);
 % Init object and tools frames
 obj_length = 0.12;
 w_obj_pos = [0.5 0 0.59]';
@@ -154,33 +154,38 @@ for t = 0:dt:Tf
     %                           Qp, ydotbar, zeros(14,1),  ...
     %                          0.0001,   0.01, 10);
     %iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight)
+
+    %% INitialization adn Parameters
     Qold = Qp;   
     rhoold = ydotbar;
-
-    % %% MINIMUM ALTITUDE
-    % % we have two task of dimension 6, we consider here the all robot dof. so A = 12 x 12
-    % A = zeros(12,12);
-    % A (6, 6) = pandaArm.ArmL.A.ma;
-    % A (12, 12) = pandaArm.ArmR.A.ma;
-    % % J = m x 14, m = row dimension of the task = 12 
-    % J = zeros(12,14);
-    % J(6,1:7) = pandaArm.ArmL.Jma;
-    % J(12,8:14) = pandaArm.ArmR.Jma;
-    
-    % % xdot has 12 row, angular and linear velcoity of the two manipulator
-    % xdot = zeros(12,1); % 12 x 1 
-    % xdot(4:6) = pandaArm.ArmL.xdot.alt;
-    % xdot(10:12) = pandaArm.ArmR.xdot.alt;
-    % % values poassed by default
     lambda = 0.0001;
     threshold = 0.01;
     weight = 10;
-    %[Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
-   
-    %Qold % dim = 14 x 14
-    %rhoold % dim 12 x 14
-    
-    %pandaArm.ArmL.wTt(1:3, 4) % print the distance of tool w.r.t. world
+
+    % %% MINIMUM ALTITUDE
+    % % we have two task of dimension 6, we consider here the all robot dof. so A = 12 x 12
+    % A = zeros(6);
+    % A (6, 6) = pandaArm.ArmL.A.ma;
+    % J = zeros(6,14);
+    % J(:,1:7) = pandaArm.ArmL.Jma;
+    % xdot(4:6) = pandaArm.ArmL.xdot.alt;
+    % [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, xdot, lambda, threshold, weight);
+    % 
+    % 
+    % A (6,6) = pandaArm.ArmR.A.ma; 
+    % J = zeros(6, 14);
+    % J(:,8:14) = pandaArm.ArmR.Jma;
+    % xdot = zeros(6,1); % 12 x 1 
+    % xdot(4:6) = pandaArm.ArmL.xdot.alt;
+    % 
+    % % values poassed by default
+    % [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, xdot, lambda, threshold, weight);
+    % 
+    % 
+    % %Qold % dim = 14 x 14
+    % %rhoold % dim 12 x 14
+    % 
+    % %pandaArm.ArmL.wTt(1:3, 4) % print the distance of tool w.r.t. world
 
     % % % JOINT LIMIT
     % % we have 14 task, of one dimension each. Because we act directly on
@@ -202,18 +207,21 @@ for t = 0:dt:Tf
     A = eye(6);
 
     %12 row, 6 ang vel, 6 lin vel 
-    J = [pandaArm.ArmL.wJt, zeros(6,7)];
-    [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, pandaArm.ArmL.xdot.tool, lambda, threshold, weight); % Left arm 
-    disp(rhoold)
+    pandaArm.ArmL.xdot.tool
+    J = [pandaArm.ArmL.wJt, zeros(6,7)]
+    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight); % Left arm 
+    %ydotbar
+    pandaArm.ArmR.xdot.tool
     J = [zeros(6, 7), pandaArm.ArmR.wJt];
-    [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, pandaArm.ArmR.xdot.tool, lambda, threshold, weight); % Right arm
-    disp(rhoold)
+    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight); % Right arm
+    %ydotbar
     
 
-    %% LAST TASK
-    [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
-        Qp, ydotbar, zeros(14,1),  ...
-        0.0001,   0.01, 10);    % this task should be the last one
+    % %% LAST TASK
+    % [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
+    %     Qp, ydotbar, zeros(14,1),  ...
+    %     0.0001,   0.01, 10);    % this task should be the last one
+    % disp(ydotbar)
 
     % get the two variables for integration
     pandaArm.ArmL.q_dot = ydotbar(1:7);

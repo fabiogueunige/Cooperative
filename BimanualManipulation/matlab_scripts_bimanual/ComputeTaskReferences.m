@@ -32,8 +32,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
            
             pandaArm.ArmL.xdot.tool = gain * [ang; lin];
             % limit the requested velocities...
-            % pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
-            % pandaArm.ArmL.xdot.tool(4:6) = Saturate();
+            pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
+            pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
     
             % RIGHT ARM
             % -----------------------------------------------------------------
@@ -42,8 +42,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
            
             pandaArm.ArmR.xdot.tool = gain * [ang; lin];
             % limit the requested velocities...
-            % pandaArm.ArmR.xdot.tool(1:3) = Saturate();
-            % pandaArm.ArmR.xdot.tool(4:6) = Saturate();
+            pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
+            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
             
         % case 2 
         %     % Perform the rigid grasp of the object and move it
