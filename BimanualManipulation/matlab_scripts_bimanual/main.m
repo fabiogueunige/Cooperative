@@ -122,7 +122,7 @@ for t = 0:dt:Tf
     % main kinematic algorithm initialization
     % ydotbar order is [qdot_1, qdot_2, ..., qdot_7, xdot, ydot, zdot, omega_x, omega_y, omega_z]
     % the vector of the vehicle linear and angular velocities are assumed
-    % projected on <v>
+    % projected on <w>
     
     ydotbar = zeros(14, 1);
     Qp = eye(14);
@@ -210,10 +210,10 @@ for t = 0:dt:Tf
     disp(rhoold)
     
 
-    % %% LAST TASK
-    % [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
-    %     Qp, ydotbar, zeros(14,1),  ...
-    %     0.0001,   0.01, 10);    % this task should be the last one
+    %% LAST TASK
+    [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
+        Qp, ydotbar, zeros(14,1),  ...
+        0.0001,   0.01, 10);    % this task should be the last one
 
     % get the two variables for integration
     pandaArm.ArmL.q_dot = ydotbar(1:7);

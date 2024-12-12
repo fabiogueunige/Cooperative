@@ -44,6 +44,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % limit the requested velocities...
             % pandaArm.ArmR.xdot.tool(1:3) = Saturate();
             % pandaArm.ArmR.xdot.tool(4:6) = Saturate();
+            
         % case 2 
         %     % Perform the rigid grasp of the object and move it
         % 
