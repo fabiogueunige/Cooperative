@@ -124,7 +124,7 @@ for t = 0:dt:Tf
     % the vector of the vehicle linear and angular velocities are assumed
     % projected on <v>
     
-    ydotbar = zeros(14,1);
+    ydotbar = zeros(14, 1);
     Qp = eye(14);
 
     % Used by the Move-To task
