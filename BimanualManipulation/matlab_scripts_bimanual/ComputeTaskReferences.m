@@ -3,7 +3,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     pandaArm.dist_tools = norm(pandaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4));
 
     %% Compute minimum altitude reference ALWAYS = gain ((min_alt + delta) - altitude)
-    gain = 0.2; % our choice (constant)
+    gain = 1; % our choice (constant)
     delta = 0.05;
     min_alt = 0.15; % giarda se vanno definiti fuori
 
