@@ -40,7 +40,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % Tool position and orientation task reference
             [ang, lin] = CartError(pandaArm.ArmR.wTt, pandaArm.ArmR.wTg);
            
-            pandaArm.ArmL.xdot.tool = gain * [ang, lin];
+            pandaArm.ArmR.xdot.tool = gain * [ang, lin];
             % limit the requested velocities...
             % pandaArm.ArmR.xdot.tool(1:3) = Saturate();
             % pandaArm.ArmR.xdot.tool(4:6) = Saturate();

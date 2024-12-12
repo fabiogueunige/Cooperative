@@ -15,16 +15,16 @@ switch mission.phase
         
 end
 %% INEQUALITY TASK ACTIVATION
-% Minimum Altitude Task ( > 0.15m, 0.05m delta )
+%% Minimum Altitude Task ( > 0.15m, 0.05m delta )
 pandaArm.ArmL.A.ma = DecreasingBellShapedFunction(0.15, 0.2, 0, 1, pandaArm.ArmL.wTt(3, 4)); % x = position on z-axis
 pandaArm.ArmR.A.ma = DecreasingBellShapedFunction(0.15, 0.2, 0, 1, pandaArm.ArmR.wTt(3, 4));
 
-% Joint Limits Task
+%% Joint Limits Task
 % Activation function: two combined sigmoids, which are at their maximum 
 % at the joint limits and approach zero between them    
 % Safety Task (inequality)
 % delta is 10% of max error
-pandaArm.ArmL.A.jl = zeros(6, 7); % matrix with on diagonal all the sigmoids
+pandaArm.ArmL.A.jl = zeros(7, 7); % matrix with on diagonal all the sigmoids
 for k = 1:7
     % set a matix with on diagonal sum of two sigmoid, one for the maximum
     % limit and one for the minimum joints limit

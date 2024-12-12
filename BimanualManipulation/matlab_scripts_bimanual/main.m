@@ -181,26 +181,21 @@ for t = 0:dt:Tf
     %rhoold % dim 12 x 14
     pandaArm.ArmL.wTt(1:3, 4) % print the distance of tool w.r.t. world
 
-    % %% JOINT LIMIT
+    % % % JOINT LIMIT
     % % we have 14 task, of one dimension each. Because we act directly on
     % % the single joint velocity
-    %A = zeros(12,12);
-    % A(1:7,1:7) = pandaArm.ArmL.A.jl;
-    % A(8:14,8:14) = pandaArm.ArmR.A.jl;
+    % % in this case I am in space joint jet, so there isn't mapping beween
+    % % the real space and joint space, so the J is an Identity matrix
+    % % A = zeros(14,14);
+    % % A(1:7,1:7) = pandaArm.ArmL.A.jl;
+    % % A(8:14,8:14) = pandaArm.ArmR.A.jl;
     % % in this case m = 14, in this case the jacobian is a diagonal matrix,
     % % same shape of A, because x_ref = 14, the speed reference, so we are
     % % mapping directly the speed of the joint, not all the 6dof of each
     % % manipulator
-    % J = zeros(14,14);
-    % for k = 1:7
-    %     J(k,k) =  pandaArm.ArmL.Jjl(k);
-    % end
-    % for p = (8:14)
-    %     J(p) = pandaArm.ArmR.Jjl(k);
-    % end
-    % xdot = zeros(14);
-    % 
-    %[Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
+    % % J = eye(14,14);
+    % % xdot = zeros(14);
+    % % [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
     %% GRASPING TASK
     A = eye(12);
@@ -208,11 +203,11 @@ for t = 0:dt:Tf
     J = zeros(12 ,14);
     J(1:6,1:7) =  pandaArm.ArmL.bJe;
     J(7:12,8:14) =  pandaArm.ArmR.bJe;
+    xdot(1:6) = pandaArm.ArmL.xdot.tool;
+    xdot(7:12) = pandaArm.ArmR.xdot.tool;
 
     [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
-
-    
     %% LAST TASK
     [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
         Qp, ydotbar, zeros(14,1),  ...
