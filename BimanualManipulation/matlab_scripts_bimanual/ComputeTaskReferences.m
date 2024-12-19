@@ -3,7 +3,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     pandaArm.dist_tools = norm(pandaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4));
 
     %% Compute minimum altitude reference ALWAYS = gain ((min_alt + delta) - altitude)
-    gain = 1; % our choice (constant)
+    gain = 0.2; % our choice (constant)
     delta = 0.05;
     min_alt = 0.15; % giarda se vanno definiti fuori
 
@@ -43,7 +43,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             pandaArm.ArmR.xdot.tool = gain * [ang; lin];
             % limit the requested velocities...
             pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
-            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
+            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
             
         % case 2 
         %     % Perform the rigid grasp of the object and move it
