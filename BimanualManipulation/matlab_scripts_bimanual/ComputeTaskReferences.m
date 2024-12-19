@@ -6,9 +6,10 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     gain = 0.2; % our choice (constant)
     delta = 0.05;
     min_alt = 0.15; % giarda se vanno definiti fuori
+    
 
-    pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [ 0; 0; gain];% generate a positive velocity, according with x-axis, before minimum altitude task is inactive
-    pandaArm.ArmR.xdot.alt = ((delta + min_alt) - pandaArm.ArmR.wTt(3,4)) * [ 0; 0; gain];
+    pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [0; 0; 0; 0; 0; gain];% generate a positive velocity, according with x-axis, before minimum altitude task is inactive
+    pandaArm.ArmR.xdot.alt = ((delta + min_alt) - pandaArm.ArmR.wTt(3,4)) * [0; 0; 0; 0; 0; gain];
     
     %% Compute joint limits task reference ALWAYS
     % Create a velocity away from the limits => move to the middle between jlmax and jlmin

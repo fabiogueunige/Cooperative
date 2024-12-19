@@ -32,9 +32,8 @@ end
 wTb_left = eye(4); % fixed transformation word -> base1 (coincides with left arm)
 % fixed transformation word -> base2
 wTb_right = eye(4); 
-wTb_right (1:3,1:3) = rotation(0, 0, pi) * eye(3);
+wTb_right (1:3,1:3) = rotation(0, 0, pi);
 wTb_right (1:3,4) = [1.06; -0.01; 0];
-
 
 plt = InitDataPlot(maxloops);
 pandaArm = InitRobot(model, wTb_left, wTb_right);
@@ -50,22 +49,25 @@ theta = -44.9949;% FIXED ANGLE BETWEEN EE AND TOOL
 tool_length = 0.2104;% FIXED DISTANCE BETWEEN EE AND TOOL
 % Define trasnformation matrix from ee to tool.
 pandaArm.ArmL.eTt = eye(4);
-pandaArm.ArmL.eTt(1:3, 1:3) = rotation(0, 0, theta);
+pandaArm.ArmL.eTt(1:3, 1:3) = rotation(0, 0, deg2rad(theta));
 pandaArm.ArmL.eTt(1:3, 4) = [0; 0; tool_length];
 
 pandaArm.ArmR.eTt = pandaArm.ArmL.eTt;
 
 % Transformation matrix from <t> to <w>
-pandaArm.ArmL.wTt = wTb_left * pandaArm.ArmL.bTe * pandaArm.ArmL.eTt;
-pandaArm.ArmR.wTt = wTb_right * pandaArm.ArmR.bTe * pandaArm.ArmR.eTt;
+pandaArm.ArmL.wTt = pandaArm.ArmL.wTe * pandaArm.ArmL.eTt;
+pandaArm.ArmR.wTt = pandaArm.ArmR.wTe * pandaArm.ArmR.eTt;
 
 %% Defines the goal position for the end-effector/tool position task
 % First goal reach the grasping points.
 w_obj_g_left = [0.44 0 0.59]';
 w_obj_g_right = [0.56 0 0.59]';
 % the tool should rotate of 30 deg on y axis to reach goal orientation
+pandaArm.ArmL.wTg = eye(4);
 pandaArm.ArmL.wTg(1:3, 1:3) = pandaArm.ArmL.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmL.wTg (1:3, 4) = w_obj_g_left;
+
+pandaArm.ArmR.wTg = eye(4);
 pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
 
@@ -167,19 +169,17 @@ for t = 0:dt:Tf
     A = zeros(6);
     A (6, 6) = pandaArm.ArmL.A.ma;
     J = zeros(6,14);
-    J(:,1:7) = pandaArm.ArmL.Jma;
-    xdot(4:6) = pandaArm.ArmL.xdot.alt;
-    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, xdot, lambda, threshold, weight);
+    J(6,1:7) = pandaArm.ArmL.Jma;
+    % 
+    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
 
 
     A (6,6) = pandaArm.ArmR.A.ma; 
     J = zeros(6, 14);
-    J(:,8:14) = pandaArm.ArmR.Jma;
-    xdot = zeros(6,1); % 12 x 1 
-    xdot(4:6) = pandaArm.ArmL.xdot.alt;
-
+    J(6,8:14) = pandaArm.ArmR.Jma;
     % values poassed by default
-    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, xdot, lambda, threshold, weight);
+    % minimum altitude left
+    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
 
 
     %Qold % dim = 14 x 14
@@ -207,20 +207,20 @@ for t = 0:dt:Tf
     A = eye(6);
 
     %12 row, 6 ang vel, 6 lin vel 
-    pandaArm.ArmL.xdot.tool
-    J = [pandaArm.ArmL.wJt, zeros(6,7)]
+    disp(pandaArm.ArmL.xdot.tool)
+    J = [pandaArm.ArmL.wJt, zeros(6,7)];
     [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight); % Left arm 
     %ydotbar
-    pandaArm.ArmR.xdot.tool
+    disp(pandaArm.ArmR.xdot.tool)
     J = [zeros(6, 7), pandaArm.ArmR.wJt];
     [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight); % Right arm
     %ydotbar
     
 
     %% LAST TASK
-    [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
-        Qp, ydotbar, zeros(14,1),  ...
-        0.0001,   0.01, 10);    % this task should be the last one
+    % [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
+    %     Qp, ydotbar, zeros(14,1),  ...
+    %     0.0001,   0.01, 10);    % this task should be the last one
     disp(ydotbar)
 
     % get the two variables for integration
@@ -243,7 +243,7 @@ for t = 0:dt:Tf
         step(hudpsRight,[t;pandaArm.ArmR.q_dot]);
     else 
         step(hudps,[pandaArm.ArmL.q',pandaArm.ArmR.q'])
-        %step(hudps,[[0, 0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0, 0]])
+        step(hudps,[[0, 0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0, 0]])
     end
     % check if the mission phase should be changed
     mission.phase_time = mission.phase_time + dt;

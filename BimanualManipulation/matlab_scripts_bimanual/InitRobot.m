@@ -1,5 +1,5 @@
 function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
-    
+   
     %% DO NOT CHANGE FROM HERE ...
     % Init two field of the main structure pandaArm containing the two robot
     % model
@@ -21,6 +21,7 @@ function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
     pandaArm.jlmin = [-2.8973;-1.7628;-2.8973;-3.0718;-2.8973;-0.0175;-2.8973];
     pandaArm.jlmax = [2.8973;1.7628;2.8973;-0.0698;2.8973;3.7525;2.8973];
     
+
     % Init relevance Jacobians
     pandaArm.ArmL.bJe = eye(6,7);
     pandaArm.ArmR.bJe = eye(6,7);
