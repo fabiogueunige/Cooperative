@@ -243,7 +243,6 @@ for t = 0:dt:Tf
     % [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
     %     Qp, ydotbar, zeros(14,1),  ...
     %     0.0001,   0.01, 10);    % this task should be the last one
-    disp(ydotbar)
 
     % get the two variables for integration
     pandaArm.ArmL.q_dot = ydotbar(1:7);
