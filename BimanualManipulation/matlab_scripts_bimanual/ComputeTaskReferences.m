@@ -29,7 +29,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % LEFT ARM
             % -----------------------------------------------------------------
             % Tool position and orientation task reference
-            [ang, lin] = CartError(pandaArm.ArmL.wTt, pandaArm.ArmL.wTg); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
+            [ang, lin] = CartError(pandaArm.ArmL.wTg, pandaArm.ArmL.wTt); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
            
             pandaArm.ArmL.xdot.tool = gain * [ang; lin];
             % limit the requested velocities...
@@ -39,7 +39,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % RIGHT ARM
             % -----------------------------------------------------------------
             % Tool position and orientation task reference
-            [ang, lin] = CartError(pandaArm.ArmR.wTt, pandaArm.ArmR.wTg);
+            [ang, lin] = CartError(pandaArm.ArmR.wTg, pandaArm.ArmR.wTt);
            
             pandaArm.ArmR.xdot.tool = gain * [ang; lin];
             % limit the requested velocities...

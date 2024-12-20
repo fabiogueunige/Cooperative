@@ -1,4 +1,3 @@
 SimulationEnvironment/**
 *.ini
-python_simulator/**
 Simulator/**
