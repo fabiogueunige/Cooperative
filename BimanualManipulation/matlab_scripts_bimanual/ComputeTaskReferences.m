@@ -46,31 +46,35 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
             pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
             
-        % case 2 
-        %     % Perform the rigid grasp of the object and move it
-        % 
-        %     % COMMON
-        %     % -----------------------------------------------------------------
-        %     % Rigid Grasp Constraint
-        %     %pandaArm.xdot.rc = ...;
-        % 
-        %     % LEFT ARM
-        %     % -----------------------------------------------------------------        
-        %     % Object position and orientation task reference
-        %     [ang, lin] = CartError();
-        %     pandaArm.ArmL.xdot.tool = ...;
-        %     % limit the requested velocities...
-        %     pandaArm.ArmL.xdot.tool(1:3) = Saturate();
-        %     pandaArm.ArmL.xdot.tool(4:6) = Saturate();
-        % 
-        %     % RIGHT ARM
-        %     % -----------------------------------------------------------------
-        %     % Object position and orientation task reference
-        %     [ang, lin] = CartError();
-        %     pandaArm.ArmR.xdot.tool = ...;
-        %     % limit the requested velocities...
-        %     %pandaArm.ArmR.xdot.tool(1:3) = Saturate();
-        %     %pandaArm.ArmR.xdot.tool(4:6) = Saturate();
+        case 2 
+            % Perform the rigid grasp of the object and move it
+
+            % COMMON
+            % -----------------------------------------------------------------
+            % Rigid Grasp Constraint
+            % from theory:
+            % [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo] * ydotbar = 0
+
+            % pandaArm.xdot.rc = 
+            
+            % LEFT ARM
+            % -----------------------------------------------------------------        
+            % Object position and orientation task reference
+            [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmL.wTo);
+            pandaArm.ArmL.xdot.obj = gain * [ang; lin];
+            % limit the requested velocities...
+            pandaArm.ArmL.xdot.obj(1:3) = Saturate(pandaArm.ArmL.xdot.obj(1:3,:), 2);
+            pandaArm.ArmL.xdot.obj(4:6) = Saturate(pandaArm.ArmL.xdot.obj(4:6,:), 2);
+    
+            % RIGHT ARM
+            % -----------------------------------------------------------------
+            % Object position and orientation task reference
+            [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmR.wTo);
+            pandaArm.ArmR.xdot.obj = gain * [ang; lin];
+            % limit the requested velocities...
+            pandaArm.ArmR.xdot.obj(1:3) = Saturate(pandaArm.ArmR.xdot.obj(1:3,:), 2);
+            pandaArm.ArmR.xdot.obj(4:6) = Saturate(pandaArm.ArmR.xdot.obj(4:6,:), 2);
+    
         % case 3
         %     % Stop any motions
         %     % LEFT ARM

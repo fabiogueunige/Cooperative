@@ -5,16 +5,20 @@ function [pandaArm] = ComputeActivationFunctions(pandaArm, mission)
 switch mission.phase
     case 1  % Reach the grasping point
         % Move-To
-         pandaArm.A.tool = 1 ;%* ActionTransition(taskname, previous, current, mission.phase_time);
+         pandaArm.A.tool = 1 ; %* ActionTransition(taskname, previous, current, mission.phase_time);
     case 2 % Move the object holding it firmly
+        pandaArm.A.tool = 0; % TODO emove after using the action transition fiunctions
+    
         % Rigid Grasp Constraint
+        pandaArm.A.rc = 1; % * ActionTransition(taskname, previous, current, mission.phase_time);
         
-        % Move-To
-        
+         % Move-To
+         pandaArm.A.target = 1 ; %* ActionTransition(taskname, previous, current, mission.phase_time);
     case 3 % STOP any motion 
         
 end
 %% INEQUALITY TASK ACTIVATION
+
 %% Minimum Altitude Task ( > 0.15m, 0.05m delta )
 pandaArm.ArmL.A.ma = DecreasingBellShapedFunction(0.15, 0.2, 0, 1, pandaArm.ArmL.wTt(3, 4)); % x = position on z-axis
 pandaArm.ArmR.A.ma = DecreasingBellShapedFunction(0.15, 0.2, 0, 1, pandaArm.ArmR.wTt(3, 4));

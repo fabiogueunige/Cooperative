@@ -31,15 +31,23 @@ pandaArm.ArmR.bJe = pandaArm.ArmR.bJe(:, 1:7); % reshape the bJe
 % Top three rows are angular velocities, bottom three linear velocities
 pandaArm.ArmL.eSt = [eye(3) zeros(3,3); (skew(pandaArm.ArmL.wTe(1:3,1:3) * pandaArm.ArmL.eTt(1:3,4)))' eye(3)]; % rigid jacobian bethwwe ee and tool
 pandaArm.ArmR.eSt = [eye(3) zeros(3,3); (skew(pandaArm.ArmR.wTe(1:3,1:3) * pandaArm.ArmR.eTt(1:3,4)))' eye(3)];
+
 %jacobian from <w> to <t>: rigid-body_jabobian * wJe (wJe --> moltiplico bJe_linear per wRb e poi bJe_angular per wRb)
-pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * pandaArm.ArmL.bJe;
-% pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmL.wTb(1:3,1:3)] * pandaArm.ArmL.bJe;
+% wJt = eSt * bJe; 
+pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmL.wTb(1:3,1:3)] * pandaArm.ArmL.bJe;
 pandaArm.ArmR.wJt = pandaArm.ArmR.eSt * [pandaArm.ArmR.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmR.wTb(1:3,1:3)] * pandaArm.ArmR.bJe;
 
-%if (mission.phase == 2)
-    %pandaArm.ArmL.wJo = ...; 
-    %pandaArm.ArmR.wJo = ...;
-%end
+if (mission.phase == 1)
+    % tSo rigid jacobian between the robot and the obj 
+    % needed distance fro tool to obj projected on world
+    % 
+    pandaArm.ArmL.tSo = [eye(3),                                                        zeros(3); 
+                         skew(pandaArm.ArmL.wTo(1:3, 4) - pandaArm.ArmL.wTt(1:3, 4))'   eye(3)];
+    pandaArm.ArmL.wJo = pandaArm.ArmL.tSo * pandaArm.ArmL.wJt; 
+    pandaArm.ArmR.tSo = [eye(3),                                                        zeros(3); 
+                         skew(pandaArm.ArmL.wTo(1:3, 4) - pandaArm.ArmL.wTt(1:3, 4))'   eye(3)];
+    pandaArm.ArmR.wJo = pandaArm.ArmR.tSo * pandaArm.ArmR.wJt;
+end
 %% Common Jacobians
 
 %minimum altitude

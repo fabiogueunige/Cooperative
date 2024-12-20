@@ -71,8 +71,12 @@ pandaArm.ArmR.wTg = eye(4);
 pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
 
-% Second goal move the object
-pandaArm.wTog = [0.65, -0.35, 0.28]';
+%% Second goal move the object
+pandaArm.wTog = eye(4);
+% probably check possible error, chek in case wtg intread wto, depending
+% the rotation of the tool
+pandaArm.wTog(1:3, 1:3) = pandaArm.ArmR.wTo(1:3, 1:3);
+pandaArm.wTog(1:3, 4) = [0.65, -0.35, 0.28]';
 
 %% Mission configuration
 
@@ -87,9 +91,9 @@ mission.phase_time = 0;
 % JL = joint limits task
 % MA = minimum altitude task
 % RC = rigid constraint task
-% mission.actions.go_to.tasks = [JL, MA, T];
-%mission.actions.coop_manip.tasks = [...];
-%mission.actions.end_motion.tasks = [...];
+mission.actions.go_to.tasks = ['JL', 'MA', 'T'];
+mission.actions.coop_manip.tasks = ['JL', 'MA', 'RC', 'T'];
+mission.actions.end_motion.tasks = ['JL', 'MA', 'RC'];
 
 %% CONTROL LOOP
 disp('STARTED THE SIMULATION');
@@ -146,11 +150,7 @@ for t = 0:dt:Tf
     % ADD minimum distance from table
     % add all the other tasks here!
     % the sequence of iCAT_task calls defines the priority
-    
-    % Bimanual system TPIK
-    % ...
-    % Task: Tool Move-To
-    %
+ 
     %% EXAMPLE 
     %[Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.ma, Jma,    ...
     %                           Qp, ydotbar, zeros(14,1),  ...
@@ -204,18 +204,40 @@ for t = 0:dt:Tf
     [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
     %% GRASPING TASK
-    A = eye(6);
-
+    A = eye(6) * pandaArm.A.tool;
+    
+    % Left Arm
     %12 row, 6 ang vel, 6 lin vel 
-    disp(pandaArm.ArmL.xdot.tool)
     J = [pandaArm.ArmL.wJt, zeros(6,7)];
     [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight); % Left arm 
     %ydotbar
-    disp(pandaArm.ArmR.xdot.tool)
+
+    % Right Arm
     J = [zeros(6, 7), pandaArm.ArmR.wJt];
     [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight); % Right arm
     %ydotbar
     
+    if mission.phase == 2
+        %% RIGID CONSTRAINT TASK
+        %A = eye(6) * pandaArm.A.rc;
+        
+        
+        %[Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight); % Right arm
+    
+        %% TARGET 
+        A = eye(6) * pandaArm.A.target;
+        % Left Arm
+        J = [pandaArm.ArmL.wJo, zeros(6,7)];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.obj, lambda, threshold, weight); % Left arm 
+        ydotbar
+    
+        % Right Arm
+        J = [zeros(6,7), pandaArm.ArmR.wJo];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight); % Left arm 
+        ydotbar
+    end
+
+
 
     %% LAST TASK
     % [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
