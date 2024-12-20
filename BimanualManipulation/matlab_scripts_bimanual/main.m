@@ -229,12 +229,12 @@ for t = 0:dt:Tf
         % Left Arm
         J = [pandaArm.ArmL.wJo, zeros(6,7)];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.obj, lambda, threshold, weight); % Left arm 
-        ydotbar
+        
     
         % Right Arm
         J = [zeros(6,7), pandaArm.ArmR.wJo];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight); % Left arm 
-        ydotbar
+        
     end
 
 
@@ -282,6 +282,7 @@ for t = 0:dt:Tf
             %add debug prints phase 1 here
         elseif (mission.phase == 2)
             %add debug prints phase 2 here
+            ydotbar
         end
     end
     
