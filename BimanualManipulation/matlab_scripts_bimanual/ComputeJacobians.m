@@ -32,7 +32,8 @@ pandaArm.ArmR.bJe = pandaArm.ArmR.bJe(:, 1:7); % reshape the bJe
 pandaArm.ArmL.eSt = [eye(3) zeros(3,3); (skew(pandaArm.ArmL.wTe(1:3,1:3) * pandaArm.ArmL.eTt(1:3,4)))' eye(3)]; % rigid jacobian bethwwe ee and tool
 pandaArm.ArmR.eSt = [eye(3) zeros(3,3); (skew(pandaArm.ArmR.wTe(1:3,1:3) * pandaArm.ArmR.eTt(1:3,4)))' eye(3)];
 %jacobian from <w> to <t>: rigid-body_jabobian * wJe (wJe --> moltiplico bJe_linear per wRb e poi bJe_angular per wRb)
-pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmL.wTb(1:3,1:3)] * pandaArm.ArmL.bJe;
+pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * pandaArm.ArmL.bJe;
+% pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmL.wTb(1:3,1:3)] * pandaArm.ArmL.bJe;
 pandaArm.ArmR.wJt = pandaArm.ArmR.eSt * [pandaArm.ArmR.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmR.wTb(1:3,1:3)] * pandaArm.ArmR.bJe;
 
 %if (mission.phase == 2)

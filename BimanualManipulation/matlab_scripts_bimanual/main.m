@@ -243,7 +243,7 @@ for t = 0:dt:Tf
         step(hudpsRight,[t;pandaArm.ArmR.q_dot]);
     else 
         step(hudps,[pandaArm.ArmL.q',pandaArm.ArmR.q'])
-        step(hudps,[[0, 0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0, 0]])
+        % step(hudps,[[0, 0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0, 0]])
     end
     % check if the mission phase should be changed
     mission.phase_time = mission.phase_time + dt;
