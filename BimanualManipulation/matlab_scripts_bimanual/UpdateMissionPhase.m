@@ -6,7 +6,7 @@ function [pandaArm, mission] = UpdateMissionPhase(pandaArm, mission)
                 [ang_left, lin_left] = CartError(pandaArm.ArmL.wTt, pandaArm.ArmL.wTg)
                 [ang_right, lin_right] = CartError(pandaArm.ArmR.wTt, pandaArm.ArmR.wTg);
                 % max error: 1/10 cm and 1deg
-                if lin_left <= 1/1000 & ang_left <= deg2rad(1) & lin_right <= 1/1000 & ang_right <= deg2rad(1)
+                if lin_left <= 1/5 & ang_left <= deg2rad(1) & lin_right <= 1/1000 & ang_right <= deg2rad(1)
                     mission.phase = 2;
                 end
 
@@ -18,7 +18,7 @@ function [pandaArm, mission] = UpdateMissionPhase(pandaArm, mission)
                 [ang_right, lin_right] = CartError(pandaArm.wTog, pandaArm.ArmR.wTo);
     
                 % max error: 1 cm and 3deg
-                if lin_left <= 1/100 & ang_left <= deg2rad(3) & lin_right <= 1/100 & ang_right <= deg2rad(3)
+                if lin_left <= 1/10 & ang_left <= deg2rad(3) & lin_right <= 1/100 & ang_right <= deg2rad(3)
                    mission.phase = 3;
                 end
                

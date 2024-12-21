@@ -141,6 +141,7 @@ for t = 0:dt:Tf
         % gripper
         tool_jacobian_L = pandaArm.ArmL.wJt;
         tool_jacobian_R = pandaArm.ArmR.wJt;
+
     elseif(mission.phase == 2)
         % In this phase the tool frame coincide with the object frame
         tool_jacobian_L = pandaArm.ArmL.wJo;
@@ -226,6 +227,7 @@ for t = 0:dt:Tf
     
         %% TARGET 
         A = eye(6) * pandaArm.A.target;
+        
         % Left Arm
         J = [pandaArm.ArmL.wJo, zeros(6,7)];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.obj, lambda, threshold, weight); % Left arm 

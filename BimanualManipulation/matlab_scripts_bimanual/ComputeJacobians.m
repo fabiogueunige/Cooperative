@@ -40,12 +40,17 @@ pandaArm.ArmR.wJt = pandaArm.ArmR.eSt * [pandaArm.ArmR.wTb(1:3,1:3) zeros(3,3); 
 if (mission.phase == 1)
     % tSo rigid jacobian between the robot and the obj 
     % needed distance fro tool to obj projected on world
-    % 
+    
+    [ang, lin] = CartError(pandaArm.ArmL.wTo, pandaArm.ArmL.wTt); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
+  
     pandaArm.ArmL.tSo = [eye(3),                                                        zeros(3); 
-                         skew(pandaArm.ArmL.wTo(1:3, 4) - pandaArm.ArmL.wTt(1:3, 4))'   eye(3)];
+                         skew(ang)'   eye(3)];
     pandaArm.ArmL.wJo = pandaArm.ArmL.tSo * pandaArm.ArmL.wJt; 
+    
+    [ang, lin] = CartError(pandaArm.ArmR.wTo, pandaArm.ArmR.wTt); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
+
     pandaArm.ArmR.tSo = [eye(3),                                                        zeros(3); 
-                         skew(pandaArm.ArmL.wTo(1:3, 4) - pandaArm.ArmL.wTt(1:3, 4))'   eye(3)];
+                         skew(ang)'   eye(3)];
     pandaArm.ArmR.wJo = pandaArm.ArmR.tSo * pandaArm.ArmR.wJt;
 end
 %% Common Jacobians
