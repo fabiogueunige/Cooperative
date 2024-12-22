@@ -219,7 +219,7 @@ for t = 0:dt:Tf
     %ydotbar
     
     if mission.phase == 2
-        %% RIGID CONSTRAINT TASK
+        %% RIGID CONSTRAINT TASK 
         %A = eye(6) * pandaArm.A.rc;
         
         
