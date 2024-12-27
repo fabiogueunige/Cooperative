@@ -38,6 +38,7 @@ pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3); 
 pandaArm.ArmR.wJt = pandaArm.ArmR.eSt * [pandaArm.ArmR.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmR.wTb(1:3,1:3)] * pandaArm.ArmR.bJe;
 
 if (mission.phase == 2)
+
     % tSo rigid jacobian between the robot and the obj 
     % needed distance from tool to obj projected on world
     

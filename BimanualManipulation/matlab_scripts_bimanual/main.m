@@ -19,7 +19,7 @@ model = load("panda.mat");
 if real_robot == true
     hudprLeft = dsp.UDPReceiver('LocalIPPort',1501,'MaximumMessageLength',255);
     hudprRight = dsp.UDPReceiver('LocalIPPort',1503,'MaximumMessageLength',255);
-    hudpsLeft = dsp.UDPSender('RemoteIPPort',1500);
+    hudpsLeft = dsp.UDPSender('RemoteIPPort',1500); % Port to set on the simulator
     hudpsLeft.RemoteIPAddress = '127.0.0.1';
     hudpsRight = dsp.UDPSender('RemoteIPPort',1502);
     hudpsRight.RemoteIPAddress = '127.0.0.1';
@@ -73,7 +73,7 @@ pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
 
 %% Second goal move the object
 pandaArm.wTog = eye(4);
-% probably check possible error, chek in case wtg intread wto, depending
+% probably check possible error, chek in case wtg insread wto, depending
 % the rotation of the tool
 pandaArm.wTog(1:3, 1:3) = pandaArm.ArmR.wTo(1:3, 1:3);
 pandaArm.wTog(1:3, 4) = [0.65, -0.35, 0.28]';
@@ -220,11 +220,15 @@ for t = 0:dt:Tf
     
     if mission.phase == 2
         %% RIGID CONSTRAINT TASK 
-        %A = eye(6) * pandaArm.A.rc;
+        A = eye(6) * pandaArm.A.rc;        
+        % Left Arm
+        J = [pandaArm.ArmL.wJo, zeros(6,7)];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight); % Left arm 
+         
+        % Right Arm
+        J = [zeros(6,7), pandaArm.ArmR.wJo];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight); % Left arm 
         
-        
-        %[Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight); % Right arm
-    
         %% TARGET 
         A = eye(6) * pandaArm.A.target;
         

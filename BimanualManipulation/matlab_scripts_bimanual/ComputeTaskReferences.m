@@ -54,8 +54,12 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % Rigid Grasp Constraint
             % from theory:
             % [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo] * ydotbar = 0
-
-            % pandaArm.xdot.rc = 
+            % Compute the distances between the two tools 
+            % comute a relative speed to mantain
+            [ang, lin ] = CartError (pandaArm.ArmL.wTt, pandaArm.ArmR.eTt);
+            % the tool mast to stay at 0.12 m of distance, so comupte the
+            % distance error TODO ...
+            pandaArm.xdot.rc = gain * [ang; lin];
             
             % LEFT ARM
             % -----------------------------------------------------------------        
