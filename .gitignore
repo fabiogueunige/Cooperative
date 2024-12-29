@@ -1,3 +1,4 @@
 SimulationEnvironment/**
 *.ini
 Simulator/**
+*.asv

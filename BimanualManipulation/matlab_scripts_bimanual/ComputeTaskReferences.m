@@ -55,7 +55,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % from theory:
             % [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo] * ydotbar = 0
 
-            % pandaArm.xdot.rc = 
+            pandaArm.xdot.rc = pandaArm.ArmL.wJo * pandaArm.ArmL.qdot + pandaArm.ArmR.wJo * pandaArm.ArmR.qdot; % Vo = J1*q1dot + J2*q2dot
             
             % LEFT ARM
             % -----------------------------------------------------------------        
