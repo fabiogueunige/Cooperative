@@ -56,10 +56,12 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo] * ydotbar = 0
             % Compute the distances between the two tools 
             % comute a relative speed to mantain
-            [ang, lin ] = CartError (pandaArm.ArmL.wTt, pandaArm.ArmR.eTt);
             % the tool mast to stay at 0.12 m of distance, so comupte the
             % distance error TODO ...
-            pandaArm.xdot.rc = gain * [ang; lin];
+            [ang, lin ] = CartError (pandaArm.ArmL.wTt, pandaArm.ArmR.wTt);
+            pandaArm.xdot.rc = gain * [ang; 0.12*lin];
+            %pandaArm.xdot.rc = zeros(6,1);
+
             
             % LEFT ARM
             % -----------------------------------------------------------------        

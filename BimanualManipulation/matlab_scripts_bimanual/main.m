@@ -70,7 +70,9 @@ pandaArm.ArmL.wTg (1:3, 4) = w_obj_g_left;
 pandaArm.ArmR.wTg = eye(4);
 pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
-
+%% prova
+pandaArm.ArmL.tTo = inv(pandaArm.ArmL.wTt) * pandaArm.ArmL.wTo; 
+pandaArm.ArmR.tTo = inv(pandaArm.ArmR.wTt) * pandaArm.ArmR.wTo; 
 %% Second goal move the object
 pandaArm.wTog = eye(4);
 % probably check possible error, chek in case wtg insread wto, depending
@@ -219,6 +221,19 @@ for t = 0:dt:Tf
     %ydotbar
     
     if mission.phase == 2
+              
+        %% TARGET 
+        A = eye(6) * pandaArm.A.target;
+
+        % Left Arm
+        J = [pandaArm.ArmL.wJo, zeros(6,7)];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.obj, lambda, threshold, weight); % Left arm 
+        
+
+        % Right Arm
+        J = [zeros(6,7), pandaArm.ArmR.wJo];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight); % Left arm 
+        
         %% RIGID CONSTRAINT TASK 
         A = eye(6) * pandaArm.A.rc;        
         % Left Arm
@@ -229,18 +244,8 @@ for t = 0:dt:Tf
         J = [zeros(6,7), pandaArm.ArmR.wJo];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight); % Left arm 
         
-        %% TARGET 
-        A = eye(6) * pandaArm.A.target;
-        
-        % Left Arm
-        J = [pandaArm.ArmL.wJo, zeros(6,7)];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.obj, lambda, threshold, weight); % Left arm 
-        
-    
-        % Right Arm
-        J = [zeros(6,7), pandaArm.ArmR.wJo];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight); % Left arm 
-        
+       
+       
     end
 
 
