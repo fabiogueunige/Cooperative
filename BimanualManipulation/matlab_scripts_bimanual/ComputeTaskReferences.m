@@ -5,7 +5,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     %% Compute minimum altitude reference ALWAYS = gain ((min_alt + delta) - altitude)
     gain = 0.6; % our choice (constant)
     delta = 0.05;
-    min_alt = 0.15; % giarda se vanno definiti fuori
+    min_alt = 0.15; % guarda se vanno definiti fuori
     
 
     pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [0; 0; 0; 0; 0; gain];% generate a positive velocity, according with x-axis, before minimum altitude task is inactive
@@ -54,8 +54,10 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % Rigid Grasp Constraint
             % from theory:
             % [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo] * ydotbar = 0
+            % J * ydot = xdot --> xdot = 0
+            pandaArm.xdot.rc = zeros(6,1);
 
-            pandaArm.xdot.rc = pandaArm.ArmL.wJo * pandaArm.ArmL.qdot + pandaArm.ArmR.wJo * pandaArm.ArmR.qdot; % Vo = J1*q1dot + J2*q2dot
+            %pandaArm.xdot.rc = pandaArm.ArmL.wJo * pandaArm.ArmL.qdot + pandaArm.ArmR.wJo * pandaArm.ArmR.qdot; % Vo = J1*q1dot + J2*q2dot
             
             % LEFT ARM
             % -----------------------------------------------------------------        
@@ -92,3 +94,4 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
 end
 
 
+ 

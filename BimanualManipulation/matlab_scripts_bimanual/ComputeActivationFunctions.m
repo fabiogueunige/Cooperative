@@ -7,7 +7,7 @@ switch mission.phase
         % Move-To
          pandaArm.A.tool = 1 ; %* ActionTransition(taskname, previous, current, mission.phase_time);
     case 2 % Move the object holding it firmly
-        pandaArm.A.tool = 0; % TODO emove after using the action transition fiunctions
+        pandaArm.A.tool = 0; % TODO remove after using the action transition functions
     
         % Rigid Grasp Constraint
         pandaArm.A.rc = 1; % * ActionTransition(taskname, previous, current, mission.phase_time);
@@ -38,6 +38,16 @@ for k = 1:7
         ((pandaArm.jlmax(k) - pandaArm.ArmL.q(k)) .* 0.1) * pandaArm.jlmax(k), 0, ...
         1, pandaArm.ArmL.wTt(3, 4));
 end
-pandaArm.ArmR.A.jl = pandaArm.ArmL.A.jl;
+
+pandaArm.ArmR.A.jl = zeros(7, 7); % matrix with on diagonal all the sigmoids
+for k = 1:7
+    % set a matix with on diagonal sum of two sigmoid, one for the maximum
+    % limit and one for the minimum joints limit
+    pandaArm.ArmR.A.jl(k,k) = DecreasingBellShapedFunction(pandaArm.jlmin(k), pandaArm.jlmin(k) ...
+        + ((pandaArm.jlmin(k) - pandaArm.ArmR.q(k)) .* 0.1) * pandaArm.jlmin(k), 0, 1, pandaArm.ArmR.wTt(3, 4)) ...
+        + IncreasingBellShapedFunction(pandaArm.jlmax(k), pandaArm.jlmax(k) + ... 
+        ((pandaArm.jlmax(k) - pandaArm.ArmR.q(k)) .* 0.1) * pandaArm.jlmax(k), 0, ...
+        1, pandaArm.ArmR.wTt(3, 4));
+end
 
 end

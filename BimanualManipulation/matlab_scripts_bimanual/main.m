@@ -71,6 +71,10 @@ pandaArm.ArmR.wTg = eye(4);
 pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
 
+%% prova
+pandaArm.ArmL.tTo = inv(pandaArm.ArmL.wTt) * pandaArm.ArmL.wTo; 
+pandaArm.ArmR.tTo = inv(pandaArm.ArmR.wTt) * pandaArm.ArmR.wTo; 
+
 %% Second goal move the object
 pandaArm.wTog = eye(4);
 % probably check possible error, chek in case wtg intread wto, depending
@@ -190,59 +194,64 @@ for t = 0:dt:Tf
     %% JOINT LIMIT
     % we have 14 task, of one dimension each. Because we act directly on
     % the single joint velocity
-    % in this case I am in space joint jet, so there isn't mapping beween
+    % in this case I am in space joint yet, so there isn't mapping beween
     % the real space and joint space, so the J is an Identity matrix
     A = zeros(14,14);
     A(1:7,1:7) = pandaArm.ArmL.A.jl;
     A(8:14,8:14) = pandaArm.ArmR.A.jl;
-    % in this case m = 14, in this case the jacobian is a diagonal matrix,
-    % same shape of A, because x_ref = 14, the speed reference, so we are
-    % mapping directly the speed of the joint, not all the 6dof of each
-    % manipulator
+    % in this case m = 14, same shape of A, because the the speed reference, x_ref = 14, so we are
+    % mapping directly the speed of the joint, not all the 6dof of each manipulator
     J = eye(14,14);
     xdot = zeros(14);
     [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
     %% GRASPING TASK
-    A = eye(6) * pandaArm.A.tool;
-    
-    % Left Arm
-    %12 row, 6 ang vel, 6 lin vel 
-    J = [pandaArm.ArmL.wJt, zeros(6,7)];
-    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight); % Left arm 
-    %ydotbar
-
-    % Right Arm
-    J = [zeros(6, 7), pandaArm.ArmR.wJt];
-    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight); % Right arm
-    %ydotbar
-    
-    if mission.phase == 2
-        %% RIGID CONSTRAINT TASK
-        %A = eye(6) * pandaArm.A.rc;
+    if mission.phase == 1
+        A = eye(6) * pandaArm.A.tool;
         
-        
-        %[Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight); % Right arm
-    
-        %% TARGET 
-        A = eye(6) * pandaArm.A.target;
         % Left Arm
-        J = [pandaArm.ArmL.wJo, zeros(6,7)];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.obj, lambda, threshold, weight); % Left arm 
-        
+        %12 row, 6 ang vel, 6 lin vel 
+        J = [pandaArm.ArmL.wJt, zeros(6,7)];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
+        %ydotbar
     
         % Right Arm
+        J = [zeros(6, 7), pandaArm.ArmR.wJt];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
+        %ydotbar
+    end
+    
+    if mission.phase == 2
+        %% TARGET 
+        A = eye(6) * pandaArm.A.target;
+
+        % Left Arm
+        J = [pandaArm.ArmL.wJo, zeros(6,7)];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.obj, lambda, threshold, weight);
+        
+        % Right Arm
         J = [zeros(6,7), pandaArm.ArmR.wJo];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight); % Left arm 
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight);
+
+        %% RIGID CONSTRAINT TASK
+        A = eye(6) * pandaArm.A.rc;
+        
+        % Left arm
+        J = [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo, zeros(6,7)];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
+
+        % Right arm
+        J = [zeros(6,7), pandaArm.ArmL.wJo - pandaArm.ArmR.wJo];
+        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
         
     end
 
 
 
     %% LAST TASK
-    % [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
-    %     Qp, ydotbar, zeros(14,1),  ...
-    %     0.0001,   0.01, 10);    % this task should be the last one
+    [Qold, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
+         Qold, ydotbar, zeros(14,1),  ...
+         0.0001,   0.01, 10);    % this task should be the last one
 
     % get the two variables for integration
     pandaArm.ArmL.q_dot = ydotbar(1:7);

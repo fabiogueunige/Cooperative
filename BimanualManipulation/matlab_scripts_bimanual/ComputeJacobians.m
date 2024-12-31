@@ -22,7 +22,7 @@ function [pandaArm] = ComputeJacobians(pandaArm,mission)
 % Left Arm base to ee Jacobian
 pandaArm.ArmL.bJe = geometricJacobian(pandaArm.ArmL.franka, ...
     [pandaArm.ArmL.q',0,0],'panda_link7');%DO NOT EDIT
-pandaArm.ArmL.bJe = pandaArm.ArmL.bJe(:,1:7); % reshaoe the bJe
+pandaArm.ArmL.bJe = pandaArm.ArmL.bJe(:,1:7); % reshape the bJe
 % Right Arm base to ee Jacobian
 pandaArm.ArmR.bJe = geometricJacobian(pandaArm.ArmR.franka, ...
     [pandaArm.ArmR.q',0,0],'panda_link7');%DO NOT EDIT
@@ -37,7 +37,7 @@ pandaArm.ArmR.eSt = [eye(3) zeros(3,3); (skew(pandaArm.ArmR.wTe(1:3,1:3) * panda
 pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmL.wTb(1:3,1:3)] * pandaArm.ArmL.bJe;
 pandaArm.ArmR.wJt = pandaArm.ArmR.eSt * [pandaArm.ArmR.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmR.wTb(1:3,1:3)] * pandaArm.ArmR.bJe;
 
-if (mission.phase == 1)
+if (mission.phase == 2)
     % tSo rigid jacobian between the robot and the obj 
     % needed distance fro tool to obj projected on world
     % 
@@ -45,7 +45,7 @@ if (mission.phase == 1)
                          skew(pandaArm.ArmL.wTo(1:3, 4) - pandaArm.ArmL.wTt(1:3, 4))'   eye(3)];
     pandaArm.ArmL.wJo = pandaArm.ArmL.tSo * pandaArm.ArmL.wJt; 
     pandaArm.ArmR.tSo = [eye(3),                                                        zeros(3); 
-                         skew(pandaArm.ArmL.wTo(1:3, 4) - pandaArm.ArmL.wTt(1:3, 4))'   eye(3)];
+                         skew(pandaArm.ArmR.wTo(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4))'   eye(3)];
     pandaArm.ArmR.wJo = pandaArm.ArmR.tSo * pandaArm.ArmR.wJt;
 end
 %% Common Jacobians
