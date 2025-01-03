@@ -96,8 +96,9 @@ mission.phase_time = 0;
 % MA = minimum altitude task
 % RC = rigid constraint task
 mission.actions.go_to.tasks = ['JL', 'MA', 'T'];
-mission.actions.coop_manip.tasks = ['JL', 'MA', 'RC', 'T'];
+mission.actions.coop_manip.tasks = ['JL', 'MA', 'RC', 'TC'];
 mission.actions.end_motion.tasks = ['JL', 'MA', 'RC'];
+mission.actions.previous = 'NULL';
 
 %% CONTROL LOOP
 disp('STARTED THE SIMULATION');
@@ -168,8 +169,8 @@ for t = 0:dt:Tf
     threshold = 0.01;
     weight = 10;
 
-    % %% MINIMUM ALTITUDE
-    % % we have two task of dimension 6, we consider here the all robot dof. so A = 12 x 12
+    %% MINIMUM ALTITUDE
+    % we have two task of dimension 6, we consider here the all robot dof. so A = 12 x 12
     A = zeros(6);
     A (6, 6) = pandaArm.ArmL.A.ma;
     J = zeros(6,14);
@@ -184,6 +185,10 @@ for t = 0:dt:Tf
     % values poassed by default
     % minimum altitude left
     [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
+
+    if A ~= 0
+        mission.actions.previous = 'MA';
+    end
 
 
     %Qold % dim = 14 x 14
@@ -205,6 +210,10 @@ for t = 0:dt:Tf
     xdot = zeros(14);
     [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
+    if A ~= zeros(14,14)    
+        mission.actions.previous = 'JL';
+    end
+
     %% GRASPING TASK
     if mission.phase == 1
         A = eye(6) * pandaArm.A.tool;
@@ -219,6 +228,8 @@ for t = 0:dt:Tf
         J = [zeros(6, 7), pandaArm.ArmR.wJt];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
         %ydotbar
+        
+        mission.actions.previous = 'T';
     end
     
     if mission.phase == 2
@@ -233,6 +244,8 @@ for t = 0:dt:Tf
         J = [zeros(6,7), pandaArm.ArmR.wJo];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight);
 
+        mission.actions.previous = 'T';
+
         %% RIGID CONSTRAINT TASK
         A = eye(6) * pandaArm.A.rc;
         
@@ -243,6 +256,8 @@ for t = 0:dt:Tf
         % Right arm
         J = [zeros(6,7), pandaArm.ArmL.wJo - pandaArm.ArmR.wJo];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
+
+        mission.actions.previous = 'RC';
         
     end
 

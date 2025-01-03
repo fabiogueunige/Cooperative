@@ -4,12 +4,16 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
 
     %% Compute minimum altitude reference ALWAYS = gain ((min_alt + delta) - altitude)
     gain = 0.6; % our choice (constant)
+    gain_jl = 0.3;
+    gain_alt = 0.3;
+    gain_tool = 0.7;
+    gain_obj = 0.2;
     delta = 0.05;
     min_alt = 0.15; % guarda se vanno definiti fuori
     
 
-    pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [0; 0; 0; 0; 0; gain];% generate a positive velocity, according with x-axis, before minimum altitude task is inactive
-    pandaArm.ArmR.xdot.alt = ((delta + min_alt) - pandaArm.ArmR.wTt(3,4)) * [0; 0; 0; 0; 0; gain];
+    pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [0; 0; 0; 0; 0; gain_alt];% generate a positive velocity, according with x-axis, before minimum altitude task is inactive
+    pandaArm.ArmR.xdot.alt = ((delta + min_alt) - pandaArm.ArmR.wTt(3,4)) * [0; 0; 0; 0; 0; gain_alt];
     
     %% Compute joint limits task reference ALWAYS
     % Create a velocity away from the limits => move to the middle between jlmax and jlmin
@@ -17,11 +21,11 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     % joint limits corresponding to the actual Panda by Franka arm configuration
     % (preso da init robot), controlla -> delta is 10% of jl - pos Joint
 
-    pandaArm.ArmL.xdot.jl.max = gain .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
-    pandaArm.ArmR.xdot.jl.max = gain .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
+    pandaArm.ArmL.xdot.jl.max = gain_jl .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
+    pandaArm.ArmR.xdot.jl.max = gain_jl .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
     
-    pandaArm.ArmL.xdot.jl.min = gain .* (pandaArm.jlmin + ((pandaArm.jlmin - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
-    pandaArm.ArmR.xdot.jl.min = gain .* (pandaArm.jlmin + ((pandaArm.jlmin - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
+    pandaArm.ArmL.xdot.jl.min = gain_jl .* (pandaArm.jlmin + ((pandaArm.jlmin - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
+    pandaArm.ArmR.xdot.jl.min = gain_jl .* (pandaArm.jlmin + ((pandaArm.jlmin - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
     
     switch mission.phase
         case 1 
@@ -31,7 +35,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % Tool position and orientation task reference
             [ang, lin] = CartError(pandaArm.ArmL.wTg, pandaArm.ArmL.wTt); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
            
-            pandaArm.ArmL.xdot.tool = gain * [ang; lin];
+            pandaArm.ArmL.xdot.tool = gain_tool * [ang; lin];
             % limit the requested velocities...
             pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
             pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
@@ -41,7 +45,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % Tool position and orientation task reference
             [ang, lin] = CartError(pandaArm.ArmR.wTg, pandaArm.ArmR.wTt);
            
-            pandaArm.ArmR.xdot.tool = gain * [ang; lin];
+            pandaArm.ArmR.xdot.tool = gain_tool * [ang; lin];
             % limit the requested velocities...
             pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
             pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
@@ -63,7 +67,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % -----------------------------------------------------------------        
             % Object position and orientation task reference
             [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmL.wTo);
-            pandaArm.ArmL.xdot.obj = gain * [ang; lin];
+            pandaArm.ArmL.xdot.obj = gain_obj * [ang; lin];
             % limit the requested velocities...
             pandaArm.ArmL.xdot.obj(1:3) = Saturate(pandaArm.ArmL.xdot.obj(1:3,:), 2);
             pandaArm.ArmL.xdot.obj(4:6) = Saturate(pandaArm.ArmL.xdot.obj(4:6,:), 2);
@@ -72,7 +76,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % -----------------------------------------------------------------
             % Object position and orientation task reference
             [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmR.wTo);
-            pandaArm.ArmR.xdot.obj = gain * [ang; lin];
+            pandaArm.ArmR.xdot.obj = gain_obj * [ang; lin];
             % limit the requested velocities...
             pandaArm.ArmR.xdot.obj(1:3) = Saturate(pandaArm.ArmR.xdot.obj(1:3,:), 2);
             pandaArm.ArmR.xdot.obj(4:6) = Saturate(pandaArm.ArmR.xdot.obj(4:6,:), 2);
