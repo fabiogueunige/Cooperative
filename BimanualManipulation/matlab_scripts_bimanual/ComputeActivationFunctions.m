@@ -4,18 +4,19 @@ function [pandaArm] = ComputeActivationFunctions(pandaArm, mission)
 % ActionTransition(taskname, previous, current, mission.phase_time);
 
 % EQUALITY TASK ACTIVATION
+
 switch mission.phase
     case 1  % Reach the grasping point
         % Move-To
-         pandaArm.A.tool = 1; %* ActionTransition(mission.actions.go_to.tasks, mission.actions.previous, 'T', mission.phase_time);
+         pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.go_to.tasks, mission.phase_time);
+        
     case 2 % Move the object holding it firmly
-        pandaArm.A.tool = 0;%ActionTransition(mission.actions.coop_manip, mission.actions.previous, 'T', mission.phase_time);%0; % TODO remove after using the action transition functions
-    
+        pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);%0; % TODO remove after using the action transition functions
         % Rigid Grasp Constraint
-        pandaArm.A.rc = 1; %* ActionTransition(mission.actions.coop_manip.tasks, mission.actions.previous, 'RC', mission.phase_time);
+        pandaArm.A.rc = 1;% * ActionTransition("RC", mission.actions.go_to.tasks, mission.actions.coop_manip, mission.phase_time);
         
          % Move-To
-         pandaArm.A.target = 1; % * ActionTransition(mission.actions.coop_manip, mission.actions.previous, 'TC', mission.phase_time);
+         pandaArm.A.target = 1 * ActionTransition("TC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
     case 3 % STOP any motion 
         
 end

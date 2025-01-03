@@ -10,6 +10,7 @@ function [pandaArm, mission] = UpdateMissionPhase(pandaArm, mission)
                 % PROBLABLY WE NEED TO ADJUST THE GAIN to use the if above
                 if lin_left <= 1/10 & lin_right <= 1/10 % & ang_right <= deg2rad(15) & ang_left <= deg2rad(15)
                     mission.phase = 2;
+                    mission.phase_time = 0;
                 end
 
                 

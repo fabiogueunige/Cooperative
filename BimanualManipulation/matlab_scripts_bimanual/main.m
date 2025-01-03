@@ -95,9 +95,9 @@ mission.phase_time = 0;
 % JL = joint limits task
 % MA = minimum altitude task
 % RC = rigid constraint task
-mission.actions.go_to.tasks = ['JL', 'MA', 'T'];
-mission.actions.coop_manip.tasks = ['JL', 'MA', 'RC', 'TC'];
-mission.actions.end_motion.tasks = ['JL', 'MA', 'RC'];
+mission.actions.go_to.tasks = ["JL", "MA", "T"];
+mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "TC"];
+mission.actions.end_motion.tasks = ["JL", "MA", "RC"];
 mission.actions.previous = 'NULL';
 
 %% CONTROL LOOP
@@ -287,7 +287,7 @@ for t = 0:dt:Tf
         step(hudpsLeft,[t;pandaArm.ArmL.q_dot]);
         step(hudpsRight,[t;pandaArm.ArmR.q_dot]);
     else 
-        step(hudps,[pandaArm.ArmL.q',pandaArm.ArmR.q'])
+        step(hudps,[pandaArm.ArmL.q',pandaArm.ArmR.q']);
         % step(hudps,[[0, 0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0, 0]])
     end
     % check if the mission phase should be changed
@@ -299,13 +299,16 @@ for t = 0:dt:Tf
     loop = loop + 1;
     % add debug prints here
     if (mod(t,0.1) == 0)
-        t 
-        phase = mission.phase
+        t
+        phase = mission.phase;
+        time = mission.phase_time;
         if (mission.phase == 1)
             %add debug prints phase 1 here
         elseif (mission.phase == 2)
+            %disp(pandaArm.A.tool);
+            disp(pandaArm.A.target);
             %add debug prints phase 2 here
-            ydotbar
+            
         end
     end
     
