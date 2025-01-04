@@ -71,7 +71,7 @@ pandaArm.ArmR.wTg = eye(4);
 pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
 
-%% prova
+%% Transformation from tool to object
 pandaArm.ArmL.tTo = inv(pandaArm.ArmL.wTt) * pandaArm.ArmL.wTo; 
 pandaArm.ArmR.tTo = inv(pandaArm.ArmR.wTt) * pandaArm.ArmR.wTo; 
 
@@ -98,7 +98,11 @@ mission.phase_time = 0;
 mission.actions.go_to.tasks = ["JL", "MA", "T"];
 mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "TC"];
 mission.actions.end_motion.tasks = ["JL", "MA", "RC"];
-mission.actions.previous = 'NULL';
+% mission.actions.previous = 'NULL';
+
+% debug code
+mission.error.lin = [];
+mission.error.ang = [];
 
 %% CONTROL LOOP
 disp('STARTED THE SIMULATION');
@@ -152,7 +156,7 @@ for t = 0:dt:Tf
         tool_jacobian_R = pandaArm.ArmR.wJo;
     end
 
-    % ADD minimum distance from table
+
     % add all the other tasks here!
     % the sequence of iCAT_task calls defines the priority
  
@@ -170,25 +174,27 @@ for t = 0:dt:Tf
     weight = 10;
 
     %% MINIMUM ALTITUDE
-    % we have two task of dimension 6, we consider here the all robot dof. so A = 12 x 12
+    % we have two task of dimension 6, we consider here the all robot dof.
+
     A = zeros(6);
     A (6, 6) = pandaArm.ArmL.A.ma;
     J = zeros(6,14);
     J(6,1:7) = pandaArm.ArmL.Jma;
-    % 
+    
+    % minimum altitude left
     [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
 
 
     A (6,6) = pandaArm.ArmR.A.ma; 
     J = zeros(6, 14);
     J(6,8:14) = pandaArm.ArmR.Jma;
-    % values poassed by default
-    % minimum altitude left
+
+    % minimum altitude right
     [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
 
-    if A ~= 0
-        mission.actions.previous = 'MA';
-    end
+    % if A ~= 0
+    %    mission.actions.previous = 'MA';
+    % end
 
 
     %Qold % dim = 14 x 14
@@ -210,9 +216,9 @@ for t = 0:dt:Tf
     xdot = zeros(14);
     [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
 
-    if A ~= zeros(14,14)    
-        mission.actions.previous = 'JL';
-    end
+    % if A ~= zeros(14,14)    
+    %    mission.actions.previous = 'JL';
+    % end
 
     %% GRASPING TASK
     if mission.phase == 1
@@ -229,7 +235,7 @@ for t = 0:dt:Tf
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
         %ydotbar
         
-        mission.actions.previous = 'T';
+        % mission.actions.previous = 'T';
     end
     
     if mission.phase == 2
@@ -244,7 +250,7 @@ for t = 0:dt:Tf
         J = [zeros(6,7), pandaArm.ArmR.wJo];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight);
 
-        mission.actions.previous = 'T';
+        % mission.actions.previous = 'T';
 
         %% RIGID CONSTRAINT TASK
         A = eye(6) * pandaArm.A.rc;
@@ -257,7 +263,7 @@ for t = 0:dt:Tf
         J = [zeros(6,7), pandaArm.ArmL.wJo - pandaArm.ArmR.wJo];
         [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
 
-        mission.actions.previous = 'RC';
+        % mission.actions.previous = 'RC';
         
     end
 
@@ -299,7 +305,7 @@ for t = 0:dt:Tf
     loop = loop + 1;
     % add debug prints here
     if (mod(t,0.1) == 0)
-        t
+        t;
         phase = mission.phase;
         time = mission.phase_time;
         if (mission.phase == 1)

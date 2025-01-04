@@ -2,8 +2,11 @@ function [pandaArm] = ComputeActivationFunctions(pandaArm, mission)
 % A define the activation task, so it is connected to the lenght of xdot reference fot each task 
 
 % ActionTransition(taskname, previous, current, mission.phase_time);
+%taskname = action we want to activate (actual)
+%previous = set of actions of previous task
+%current = set of actions of actual task
 
-% EQUALITY TASK ACTIVATION
+%% EQUALITY TASK ACTIVATION
 
 switch mission.phase
     case 1  % Reach the grasping point

@@ -6,7 +6,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     gain = 0.6; % our choice (constant)
     gain_jl = 0.3;
     gain_alt = 0.3;
-    gain_tool = 0.7;
+    gain_tool = 0.3;
     gain_obj = 0.2;
     delta = 0.05;
     min_alt = 0.15; % guarda se vanno definiti fuori
@@ -26,6 +26,18 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     
     pandaArm.ArmL.xdot.jl.min = gain_jl .* (pandaArm.jlmin + ((pandaArm.jlmin - pandaArm.ArmL.q) .* 0.1) - pandaArm.ArmL.q);
     pandaArm.ArmR.xdot.jl.min = gain_jl .* (pandaArm.jlmin + ((pandaArm.jlmin - pandaArm.ArmR.q) .* 0.1) - pandaArm.ArmR.q);
+
+    %% PROVA INTEGRATORE
+    persistent integrated_error_L;
+
+    if isempty(integrated_error_L)
+    integrated_error_L = zeros(6,1); % Inizializza l'errore integrato a zero
+    end
+
+    dt = 0.005; % Tempo di campionamento (modificare in base alla frequenza del ciclo)
+    gain_I = 0.001; % Guadagno integrativo (modificare in base alle prestazioni desiderate)
+
+    %%
     
     switch mission.phase
         case 1 
@@ -34,8 +46,15 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % -----------------------------------------------------------------
             % Tool position and orientation task reference
             [ang, lin] = CartError(pandaArm.ArmL.wTg, pandaArm.ArmL.wTt); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
+            
+            % PROVA INTEGRATORE
+            current_error_L = [ang; lin];  
+            integrated_error_L = integrated_error_L + current_error_L * dt;
+
+            pandaArm.ArmL.xdot.tool_I = gain_I * integrated_error_L;
            
-            pandaArm.ArmL.xdot.tool = gain_tool * [ang; lin];
+            pandaArm.ArmL.xdot.tool = gain_tool * [ang; lin] + pandaArm.ArmL.xdot.tool_I;
+
             % limit the requested velocities...
             pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
             pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
