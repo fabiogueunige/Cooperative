@@ -27,7 +27,7 @@ class myThread (threading.Thread):
 def udpReceiver():
     global data
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client_socket.bind(("127.0.0.1", 1505)) #REMEMBER THE VALUE OF THIS PORT!
+    client_socket.bind(("127.0.0.1", 1500)) #REMEMBER THE VALUE OF THIS PORT!
     start = time.time()
 
     while(1):
