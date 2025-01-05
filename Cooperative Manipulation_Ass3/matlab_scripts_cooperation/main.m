@@ -28,8 +28,9 @@ end
 %% TO HERE
 
 % Init robot model
-wTb_left = ...; %fixed transformation word -> base left
-wTb_right = ...; %fixed transformation word -> base right
+wTb_left = eye(4); %fixed transformation word -> base left
+wTb_right(1:3,1:3) = rotation(0,0,pi); %fixed transformation word -> base right
+wTb_right(1:3,4) = [1.06; -0.01; 0];
 pandaArm1 = InitRobot(model,wTb_left);
 pandaArm2 = InitRobot(model,wTb_right);
 
@@ -37,29 +38,43 @@ pandaArm2 = InitRobot(model,wTb_right);
 plt = InitDataPlot(maxloops);
 
 % Init object frame
-obj_length = ...;
-w_obj_pos = ...;
-w_obj_ori = ...;
-pandaArm1.wTo = ...;
-pandaArm2.wTo = ...;
+obj_length = 0.06;
+w_obj_pos = [0.50; 0; 0.30];
+w_obj_ori = rotation(0,0,0); %% !!!!!
+pandaArm1.wTo = [w_obj_ori w_obj_pos; 0 0 0 1];
+pandaArm2.wTo = pandaArm1.wTo; %% !!!!!
 
 theta = -44.9949;% FIXED ANGLE BETWEEN EE AND TOOL 
-tool_length = 0.2124;% FIXED DISTANCE BETWEEN EE AND TOOL
+tool_length = 0.2104;% FIXED DISTANCE BETWEEN EE AND TOOL
 % Define trasnformation matrix from ee to tool.
-pandaArm1.eTt = ...;
-pandaArm2.eTt = ...;
+pandaArm1 = eye(4);
+pandaArm1.eTt(1:3,1:3) = rotation(0, 0, deg2rad(theta));
+pandaArm1.eTt(1:3,4) = [0; 0; tool_length];
+pandaArm2.eTt = pandaArm1.eTt;
 
 % Transformation matrix from <t> to <w>
-pandaArm1.wTt = ...;
-pandaArm2.wTt = ...;
+pandaArm1.wTt = pandaArm1.wTe * pandaArm1.eTt;
+pandaArm2.wTt = pandaArm2.wTe * pandaArm2.eTt;
+
+% Transformation from tool to object
+% TODO !!!!
 
 %% Defines the goal position for the end-effector/tool position task
+
 % First goal reach the grasping points.
-pandaArm1.wTg = ...;
-pandaArm2.wTg = ...;
+pandaArm1.wTg = eye(4);
+pandaArm1.wTg(1:3,1:3) = pandaArm1.wTt(1:3,1:3) * rotation(0, deg2rad(20), 0); % !!!!
+pandaArm1wTg(1:3,4) = [w_obj_pos(1) - (obj_length/2); w_obj_pos(2); w_obj_pos(3)];
+pandaArm2.wTg = eye(4);
+pandaArm2.wTg(1:3,1:3) = pandaArm2.wTt(1:3,1:3) * rotation(0, deg2rad(20), 0);
+pandaArm2wTg(1:3,4) = [w_obj_pos(1) - (obj_length/2); w_obj_pos(2); w_obj_pos(3)];
+
 % Second goal move the object
-pandaArm1.wTog = ...;
-pandaArm2.wTog = ...;
+w_obj_g = [0.60; 0.40; 0.48]; % object goal position
+pandaArm1.wTog = eye(4);
+pandaArm1.wTog(1:3,4) = w_obj_g;
+pandaArm2.wTog = eye(4);
+pandaArm2.wTog(1:3,4) = w_obj_g;
 
 %% Mission configuration
 
@@ -73,9 +88,10 @@ mission.phase_time = 0;
 % JL = joint limits task
 % MA = minimum altitude task
 % RC = rigid constraint task
-mission.actions.go_to.tasks = [...];
-mission.actions.coop_manip.tasks = [...];
-mission.actions.end_motion.tasks = [...];
+% TC = tool constraint
+mission.actions.go_to.tasks = ["JL","MA","T"];
+mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "TC"];
+mission.actions.end_motion.tasks = ["MA"];
 
 %% CONTROL LOOP
 for t = 0:deltat:end_time
