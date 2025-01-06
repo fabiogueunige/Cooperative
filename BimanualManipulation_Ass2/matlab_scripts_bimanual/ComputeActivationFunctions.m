@@ -11,17 +11,17 @@ function [pandaArm] = ComputeActivationFunctions(pandaArm, mission)
 switch mission.phase
     case 1  % Reach the grasping point
         % Move-To
-         pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.go_to.tasks, mission.phase_time);
+        pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.go_to.tasks, mission.phase_time);
         
     case 2 % Move the object holding it firmly
         pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);%0; % TODO remove after using the action transition functions
         % Rigid Grasp Constraint
         pandaArm.A.rc = 1;% * ActionTransition("RC", mission.actions.go_to.tasks, mission.actions.coop_manip, mission.phase_time);
         
-         % Move-To
-         pandaArm.A.target = 1 * ActionTransition("TC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
-    case 3 % STOP any motion 
-        
+        % Move-To
+        pandaArm.A.target = 1 * ActionTransition("TC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
+    case 3 % STOP any motion
+        pandaArm.A.stop = 1 * ActionTransition("S", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);        
 end
 %% INEQUALITY TASK ACTIVATION
 
@@ -38,22 +38,17 @@ pandaArm.ArmL.A.jl = zeros(7, 7); % matrix with on diagonal all the sigmoids
 for k = 1:7
     % set a matix with on diagonal sum of two sigmoid, one for the maximum
     % limit and one for the minimum joints limit
-    pandaArm.ArmL.A.jl(k,k) = DecreasingBellShapedFunction(pandaArm.jlmin(k), pandaArm.jlmin(k) ...
-        + ((pandaArm.jlmin(k) - pandaArm.ArmL.q(k)) .* 0.1) * pandaArm.jlmin(k), 0, 1, pandaArm.ArmL.wTt(3, 4)) ...
-        + IncreasingBellShapedFunction(pandaArm.jlmax(k), pandaArm.jlmax(k) + ... 
-        ((pandaArm.jlmax(k) - pandaArm.ArmL.q(k)) .* 0.1) * pandaArm.jlmax(k), 0, ...
-        1, pandaArm.ArmL.wTt(3, 4));
+    pandaArm.ArmL.A.jl(k,k) = DecreasingBellShapedFunction(pandaArm.jlmin(k), pandaArm.jlmin(k) + pandaArm.jlmin(k) * 0.1, 0, 1, pandaArm.ArmL.q(k)) ...
+                        + IncreasingBellShapedFunction(pandaArm.jlmax(k) - pandaArm.jlmax(k) * 0.1, pandaArm.jlmax(k) , 0,1, pandaArm.ArmL.q(k));
 end
-
+disp(pandaArm.ArmL.A.jl)
 pandaArm.ArmR.A.jl = zeros(7, 7); % matrix with on diagonal all the sigmoids
 for k = 1:7
     % set a matix with on diagonal sum of two sigmoid, one for the maximum
     % limit and one for the minimum joints limit
-    pandaArm.ArmR.A.jl(k,k) = DecreasingBellShapedFunction(pandaArm.jlmin(k), pandaArm.jlmin(k) ...
-        + ((pandaArm.jlmin(k) - pandaArm.ArmR.q(k)) .* 0.1) * pandaArm.jlmin(k), 0, 1, pandaArm.ArmR.wTt(3, 4)) ...
-        + IncreasingBellShapedFunction(pandaArm.jlmax(k), pandaArm.jlmax(k) + ... 
-        ((pandaArm.jlmax(k) - pandaArm.ArmR.q(k)) .* 0.1) * pandaArm.jlmax(k), 0, ...
-        1, pandaArm.ArmR.wTt(3, 4));
+    pandaArm.ArmR.A.jl(k,k) = DecreasingBellShapedFunction(pandaArm.jlmin(k), pandaArm.jlmin(k) + pandaArm.jlmin(k) * 0.1, 0, 1, pandaArm.ArmR.q(k)) ...
+                        + IncreasingBellShapedFunction(pandaArm.jlmax(k) - pandaArm.jlmax(k) * 0.1, pandaArm.jlmax(k) , 0,1, pandaArm.ArmR.q(k));
+ 
 end
-
+%disp(pandaArm.ArmL.A.jl)
 end

@@ -21,17 +21,34 @@ pandaArm.bJe = geometricJacobian(pandaArm.franka,[pandaArm.q',0,0],'panda_link7'
 % THE JACOBIAN bJe has dimension 6x9 (the matlab model include the joint
 % of the gripper). YOU MUST RESIZE THE MATRIX IN ORDER TO CONTROL ONLY THE
 % 7 JOINTS OF THE ROBOTIC ARM. 
-pandaArm.bJe = pandaArm.ArmR.bJe(:, 1:7);
+pandaArm.bJe = pandaArm.bJe(:, 1:7);
 
-% rigid-body jacobian
+% rigid-body jacobian from <ee> to <tool>
 pandaArm.eSt = [eye(3) zeros(3,3); (skew(pandaArm.wTe(1:3,1:3) * pandaArm.eTt(1:3,4)))' eye(3)]; % !!! controllare !!!
 
 
-pandaArm.wJt = ...;
+pandaArm.wJt = pandaArm.eSt * [pandaArm.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.wTb(1:3,1:3)] * pandaArm.bJe;
 
 if mission.phase == 2
-    pandaArm.wJo = ...;
+    % define here the rigid body Jacobian of tool wit the object
+    % (difference between the object frame w.r.t. tool frame
+    %% todo project on world frame the distance
+    % w_tTo calcolato al grasping point 
+    %tTo calcolare in update mission phase andaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmL.wTo(1:3, 4)
+    pandaArm.tSo = [eye(3) zeros(3,3); (skew(pandaArm.wTo(1:3,1:3) * pandaArm.tTo(1:3,4)))' eye(3)]; % !!! controllare !!!
+   
+    % multiply the rigid jacobian with te jacobian until the previous tool
+    pandaArm.wJo = pandaArm.tSo * pandaArm.wJt;
 end
 
-pandaArm.Jjl = ;
+
+%% Joint limit jacobian
+% consider only the z angular axis of the joint
+pandaArm.J.jl = eye(7);
+
+%% Minimum altitude jacobian
+% consider only the velocity on z linear axis 
+pandaArm.J.ma = zeros(6, 7);
+pandaArm.J.ma(6, :) = pandaArm.wJt(6,:);
+
 end

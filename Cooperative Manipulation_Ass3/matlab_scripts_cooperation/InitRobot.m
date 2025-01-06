@@ -11,11 +11,11 @@ pandaArm.alt = 0.20;
 
 pandaArm.bTe = getTransform(pandaArm.franka,[pandaArm.q',0,0],'panda_link7');
 pandaArm.wTb = wTb;
-pandaArm.wTe = pandaArm.wTb*pandaArm.bTe;
+pandaArm.wTe = pandaArm.wTb * pandaArm.bTe;
 
 % joint limits corresponding to the actual Panda by Franka arm configuration
-pandaArm.jlmin = [-2.8973;-1.7628;-2.8973;-3.0718;-2.8973;-0.0175;-2.8973];
-pandaArm.jlmax = [2.8973;1.7628;2.8973;-0.0698;2.8973;3.7525;2.8973];
+pandaArm.jlmin = [-2.8973; -1.7628; -2.8973; -3.0718; -2.8973; -0.0175; -2.8973];
+pandaArm.jlmax = [2.8973; 1.7628; 2.8973; -0.0698; 2.8973; 3.7525; 2.8973];
 
 % Init relevance Jacobians
 pandaArm.bJe = eye(6,7);

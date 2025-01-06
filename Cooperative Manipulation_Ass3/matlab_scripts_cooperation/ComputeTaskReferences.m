@@ -1,6 +1,6 @@
 function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
 
-gain = 0.6;
+gain = 0.5;
 min_alt = 0.15;
 delta = 0.05;
 
@@ -11,7 +11,7 @@ pandaArm.xdot.alt = ((delta + min_alt) - pandaArm.wTt(3,4)) * [0; 0; 0; 0; 0; ga
 
 % Compute joint limits task reference ALWAYS
 % Create a velocity away from the limits => move to the middle between jlmax and jlmin
-pandaArm.xdot.jl = gain_jl .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.q) .* 0.1) - pandaArm.q);
+pandaArm.xdot.jl = gain .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.q) .* 0.1) - pandaArm.q);
 
 switch mission.phase
     case 1
@@ -24,10 +24,11 @@ switch mission.phase
         pandaArm.xdot.tool(4:6) = Saturate(pandaArm.xdot.tool(4:6,:),2);    
     case 2
         % Rigid Grasp Constraint
+        pandaArm.xdot.rc = zeros(6,1);
         
         % Object position and orientation task reference
-        [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmL.wTo);
-       
+        [ang, lin] = CartError(pandaArm.wTog, pandaArm.wTo);
+        disp(lin);
         pandaArm.xdot.tool = gain * [ang;lin];
         % Limits request velocities
         pandaArm.xdot.tool(1:3) = Saturate(pandaArm.xdot.tool(1:3,:), 2);

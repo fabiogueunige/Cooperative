@@ -42,11 +42,13 @@ if (mission.phase == 2)
     % tSo rigid jacobian between the robot and the obj 
     % needed distance fro tool to obj projected on world
     % 
-    pandaArm.ArmL.tSo = [eye(3),                                                        zeros(3); 
-                         skew(pandaArm.ArmL.wTo(1:3, 4) - pandaArm.ArmL.wTt(1:3, 4))'   eye(3)];
+    pandaArm.ArmL.tSo = [eye(3) zeros(3,3); (skew(pandaArm.ArmL.wTo(1:3,1:3) * (pandaArm.ArmL.tDo)))' eye(3)]; % rigid jacobian bethwwe ee and tool
+    pandaArm.ArmR.tSo = [eye(3) zeros(3,3); (skew(pandaArm.ArmR.wTo(1:3,1:3) * (pandaArm.ArmL.tDo)))' eye(3)];
+    %tTo calcolare in update mission phase andaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmL.wTo(1:3, 4))
+    
     pandaArm.ArmL.wJo = pandaArm.ArmL.tSo * pandaArm.ArmL.wJt; 
-    pandaArm.ArmR.tSo = [eye(3),                                                        zeros(3); 
-                         skew(pandaArm.ArmR.wTo(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4))'   eye(3)];
+    % pandaArm.ArmR.tSo = [eye(3),                                                        zeros(3); 
+    %                      skew(pandaArm.ArmR.wTo(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4))'   eye(3)];
     pandaArm.ArmR.wJo = pandaArm.ArmR.tSo * pandaArm.ArmR.wJt;
 end
 %% Common Jacobians

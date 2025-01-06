@@ -26,15 +26,6 @@ function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
     pandaArm.ArmL.bJe = eye(6,7);
     pandaArm.ArmR.bJe = eye(6,7);
     pandaArm.Jjl = [];
-    
-    %% ... TO HERE
-    % Init Task Reference vectors
-    % rho = 0
-    % Qo = 0
-    % Init Activation function for activate or deactivate tasks
-    
-    
-
 
 end
 

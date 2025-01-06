@@ -73,10 +73,6 @@ pandaArm.ArmR.wTg = eye(4);
 pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
 
-%% Transformation from tool to object
-pandaArm.ArmL.tTo = inv(pandaArm.ArmL.wTt) * pandaArm.ArmL.wTo; 
-pandaArm.ArmR.tTo = inv(pandaArm.ArmR.wTt) * pandaArm.ArmR.wTo; 
-
 %% Second goal move the object
 pandaArm.wTog = eye(4);
 % probably check possible error, chek in case wtg intread wto, depending
@@ -97,10 +93,10 @@ mission.phase_time = 0;
 % MA = minimum altitude task
 % RC = rigid constraint task
 % TC = tool constaint
+% S = stop motion
 mission.actions.go_to.tasks = ["JL", "MA", "T"];
 mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "TC"];
-mission.actions.end_motion.tasks = ["JL", "MA", "RC"];
-% mission.actions.previous = 'NULL';
+mission.actions.end_motion.tasks = ["MA", "S"];
 
 % debug code
 mission.error.lin = [];
@@ -141,8 +137,7 @@ for t = 0:dt:Tf
     % the vector of the vehicle linear and angular velocities are assumed
     % projected on <w>
     
-    ydotbar = zeros(14, 1);
-    Qp = eye(14);
+   
 
     % Used by the Move-To task
     tool_jacobian_L = zeros(6, 7);
@@ -162,18 +157,33 @@ for t = 0:dt:Tf
     % add all the other tasks here!
     % the sequence of iCAT_task calls defines the priority
  
-    %% EXAMPLE 
-    %[Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.ma, Jma,    ...
-    %                           Qp, ydotbar, zeros(14,1),  ...
-    %                          0.0001,   0.01, 10);
-    %iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight)
-
     %% INitialization adn Parameters
-    Qold = Qp;   
-    rhoold = ydotbar;
+    ydotbar = zeros(14, 1);
+    Qp = eye(14);
     lambda = 0.0001;
     threshold = 0.01;
     weight = 10;
+
+    %% JOINT LIMIT
+    % we have 14 task, of one dimension each. Because we act directly on
+    % the single joint velocity
+    % in this case I am in space joint yet, so there isn't mapping beween
+    % the real space and joint space, so the J is an Identity matrix
+    A = zeros(14);
+    A (1:7,1:7) = (pandaArm.ArmL.A.jl);
+    J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
+    xdot = zeros(14, 1);
+    xdot(1:7, 1) = pandaArm.ArmL.xdot.jl;
+    [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
+    
+    % right arm
+    A = zeros(14);
+    A(8:14,8:14) = pandaArm.ArmR.A.jl;
+    xdot = zeros(14, 1);
+    xdot(8:14, 1) = pandaArm.ArmR.xdot.jl;
+    J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
+    [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
+    
 
     %% MINIMUM ALTITUDE
     % we have two task of dimension 6, we consider here the all robot dof.
@@ -182,98 +192,75 @@ for t = 0:dt:Tf
     A (6, 6) = pandaArm.ArmL.A.ma;
     J = zeros(6,14);
     J(6,1:7) = pandaArm.ArmL.Jma;
-    
-    % minimum altitude left
-    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
 
+    % minimum altitude left
+    [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
 
     A (6,6) = pandaArm.ArmR.A.ma; 
     J = zeros(6, 14);
     J(6,8:14) = pandaArm.ArmR.Jma;
 
     % minimum altitude right
-    [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
-
-    % if A ~= 0
-    %    mission.actions.previous = 'MA';
-    % end
+    [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
 
 
-    %Qold % dim = 14 x 14
-    %rhoold % dim 12 x 14
 
-    %pandaArm.ArmL.wTt(1:3, 4) % print the distance of tool w.r.t. world
-
-    %% JOINT LIMIT
-    % we have 14 task, of one dimension each. Because we act directly on
-    % the single joint velocity
-    % in this case I am in space joint yet, so there isn't mapping beween
-    % the real space and joint space, so the J is an Identity matrix
-    A = zeros(14,14);
-    A(1:7,1:7) = pandaArm.ArmL.A.jl;
-    A(8:14,8:14) = pandaArm.ArmR.A.jl;
-    % in this case m = 14, same shape of A, because the the speed reference, x_ref = 14, so we are
-    % mapping directly the speed of the joint, not all the 6dof of each manipulator
-    J = eye(14,14);
-    xdot = zeros(14);
-    [Qold, rhoold] = iCAT_task(A, J, Qold, rhoold, xdot, lambda, threshold, weight);
-
-    % if A ~= zeros(14,14)    
-    %    mission.actions.previous = 'JL';
-    % end
 
     %% GRASPING TASK
     if mission.phase == 1
         A = eye(6) * pandaArm.A.tool;
-        
+
         % Left Arm
         %12 row, 6 ang vel, 6 lin vel 
         J = [pandaArm.ArmL.wJt, zeros(6,7)];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
-        %ydotbar
-    
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
+
         % Right Arm
         J = [zeros(6, 7), pandaArm.ArmR.wJt];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
-        %ydotbar
-        
-        % mission.actions.previous = 'T';
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
+
     end
-    
+
     if mission.phase == 2
         %% TARGET 
         A = eye(6) * pandaArm.A.target;
 
         % Left Arm
         J = [pandaArm.ArmL.wJo, zeros(6,7)];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmL.xdot.obj, lambda, threshold, weight);
-        
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
+
         % Right Arm
         J = [zeros(6,7), pandaArm.ArmR.wJo];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.ArmR.xdot.obj, lambda, threshold, weight);
-
-        % mission.actions.previous = 'T';
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
 
         %% RIGID CONSTRAINT TASK
         A = eye(6) * pandaArm.A.rc;
-        
+
         % Left arm
         J = [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo, zeros(6,7)];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
 
         % Right arm
         J = [zeros(6,7), pandaArm.ArmL.wJo - pandaArm.ArmR.wJo];
-        [Qold, ydotbar] = iCAT_task(A, J, Qold, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
 
-        % mission.actions.previous = 'RC';
-        
+
+    end
+    if mission.phase == 3
+        % Left arm
+        J = [pandaArm.ArmL.wJo, zeros(6,7)];
+        [Qp, ydotbar] = iCAT_task(pandaArm.A.stop, J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
+
+        % Right Arm
+        J = [zeros(6,7), pandaArm.ArmR.wJo];
+        [Qp, ydotbar] = iCAT_task(pandaArm.A.stop, J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
+
     end
 
 
-
     %% LAST TASK
-    [Qold, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
-         Qold, ydotbar, zeros(14,1),  ...
+    [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
+         Qp, ydotbar, zeros(14,1),  ...
          0.0001,   0.01, 10);    % this task should be the last one
 
     % get the two variables for integration
@@ -296,7 +283,7 @@ for t = 0:dt:Tf
         step(hudpsRight,[t;pandaArm.ArmR.q_dot]);
     else 
         step(hudps,[pandaArm.ArmL.q',pandaArm.ArmR.q']);
-        % step(hudps,[[0, 0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0, 0]])
+        % step(hudps,[[0, 0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0, 0]]);
     end
     % check if the mission phase should be changed
     mission.phase_time = mission.phase_time + dt;
@@ -308,13 +295,13 @@ for t = 0:dt:Tf
     % add debug prints here
     if (mod(t,0.1) == 0)
         t;
-        phase = mission.phase;
+        phase = mission.phase
         time = mission.phase_time;
         if (mission.phase == 1)
             %add debug prints phase 1 here
         elseif (mission.phase == 2)
             %disp(pandaArm.A.tool);
-            disp(pandaArm.A.target);
+            %disp(pandaArm.A.target);
             %add debug prints phase 2 here
             
         end
