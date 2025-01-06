@@ -8,16 +8,23 @@ switch mission.phase
     case 2 % Move the object holding it firmly
         
         % Deactivate previous task 
-        pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time) * eye(6); %0; % TODO remove after using the action transition functions
-        % Rigid Grasp Constraint
-        pandaArm.A.rc = 1;% * ActionTransition("RC", mission.actions.go_to.tasks, mission.actions.coop_manip, mission.phase_time);
+        pandaArm.A.tool = ActionTransition("T", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time) * eye(6); 
+
+        % Activate Rigid Grasp Constraint
+        pandaArm.A.rc = ActionTransition("RC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
         
-        % Move-To
-        pandaArm.A.target = 1 * ActionTransition("TC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time) * eye(6);
+        % Activate Move-To
+        pandaArm.A.target = ActionTransition("TC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time) * eye(6);
        
     case 3 % STOP any motion 
-        
+
+        % Deactivate Move-to
+        pandaArm.A.target = ActionTransition("TC", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);
+
+        % Activate stop motion
+        pandaArm.A.stop = ActionTransition ("S", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);
 end
+
 % INEQUALITY TASK ACTIVATION
 % Minimum Altitude Task ( > 0.15m, 0.05m delta )
 pandaArm.A.ma = zeros(6,6);
@@ -28,6 +35,7 @@ pandaArm.A.ma(6, 6) = DecreasingBellShapedFunction(0.15, 0.2, 0, 1, pandaArm.wTt
 % at the joint limits and approach zero between them    
 % Safety Task (inequality)
 % delta is 10% of max error
+
 pandaArm.A.jl = zeros(7); % matrix with on diagonal all the sigmoids
 for k = 1:7
     % set a matix with on diagonal sum of two sigmoid, one for the maximum

@@ -24,19 +24,15 @@ pandaArm.bJe = geometricJacobian(pandaArm.franka,[pandaArm.q',0,0],'panda_link7'
 pandaArm.bJe = pandaArm.bJe(:, 1:7);
 
 % rigid-body jacobian from <ee> to <tool>
-pandaArm.eSt = [eye(3) zeros(3,3); (skew(pandaArm.wTe(1:3,1:3) * pandaArm.eTt(1:3,4)))' eye(3)]; % !!! controllare !!!
-
-
+pandaArm.eSt = [eye(3) zeros(3,3); (skew(pandaArm.wTe(1:3,1:3) * pandaArm.eTt(1:3,4)))' eye(3)]; 
 pandaArm.wJt = pandaArm.eSt * [pandaArm.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.wTb(1:3,1:3)] * pandaArm.bJe;
 
 if mission.phase == 2
     % define here the rigid body Jacobian of tool wit the object
     % (difference between the object frame w.r.t. tool frame
     %% todo project on world frame the distance
-    % w_tTo calcolato al grasping point 
-    %tTo calcolare in update mission phase andaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmL.wTo(1:3, 4)
-    pandaArm.tSo = [eye(3) zeros(3,3); (skew(pandaArm.wTo(1:3,1:3) * pandaArm.tTo(1:3,4)))' eye(3)]; % !!! controllare !!!
-   
+    % tDo computed in Update mission 
+    pandaArm.tSo = [eye(3) zeros(3,3); (skew(pandaArm.wTo(1:3,1:3) * pandaArm.tDo))' eye(3)];
     % multiply the rigid jacobian with te jacobian until the previous tool
     pandaArm.wJo = pandaArm.tSo * pandaArm.wJt;
 end

@@ -57,10 +57,6 @@ pandaArm2.eTt = pandaArm1.eTt;
 pandaArm1.wTt = pandaArm1.wTe * pandaArm1.eTt;
 pandaArm2.wTt = pandaArm2.wTe * pandaArm2.eTt;
 
-% Transformation from tool to object
-pandaArm1.tTo = inv(pandaArm1.wTt)  * (pandaArm1.wTo);
-pandaArm2.tTo = inv(pandaArm2.wTt)  * (pandaArm2.wTo);
-
 
 %% Defines the goal position for the end-effector/tool position task
 
@@ -94,11 +90,14 @@ mission.phase_time = 0;
 % TC = tool constraint
 mission.actions.go_to.tasks = ["JL","MA","T"];
 mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "TC"];
-mission.actions.end_motion.tasks = ["MA"];
+mission.actions.end_motion.tasks = ["MA","S"];
 
 % debug code
 mission.error.lin = [];
 mission.error.ang = [];
+
+%% cooperative parameters initialization
+mu0 = 1;
 
 %% CONTROL LOOP
 for t = 0:deltat:end_time
@@ -194,36 +193,97 @@ for t = 0:deltat:end_time
                                     0.0001,   0.01, 10);  
     end
     
-   
-    % COOPERATION hierarchy
-    % SAVE THE NON COOPERATIVE VELOCITIES COMPUTED
-    
-    % Task: Left Arm Cooperation
-    % ...
+
     if(mission.phase ==2)
-        % 
+
+        %% COOPERATION hierarchy
+        % 1/ Compute task references
+    
+        % 2/ Each agent run TPIK hierarchy 
+    
+        % Task: Left Arm Cooperation
         [Qp, ydotbar] = iCAT_task(pandaArm1.A.target,...
         pandaArm1.wJo,...
         Qp, ydotbar,...
         pandaArm1.xdot.tool,...
         0.0001,   0.01, 10);
-
+        % Task: Right Arm Cooperation 
         [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.target,...
         pandaArm2.wJo,....
         Qp2, ydotbar2,...
         pandaArm2.xdot.tool,...
         0.0001,   0.01, 10);  
+   
+        % 3/  compute the NON COOPERATIVE velocities (xdot)
+        pandaArm1.xdot.nc.tool = pandaArm1.wJo * ydotbar;
+        pandaArm2.xdot.nc.tool = pandaArm2.wJo * ydotbar2;
+        
+        % Compute the weights
+        pandaArm1.m = mu0 + norm(pandaArm1.xdot.tool - pandaArm1.xdot.nc.tool);
+        pandaArm2.m = mu0 + norm(pandaArm2.xdot.tool - pandaArm2.xdot.nc.tool);
+        
+        % 5/ Compute the COOPERATIVE velocities (xdot_cappello)
+        pandaArm.xdot.c.tool = (1/(pandaArm1.m + pandaArm2.m) * (pandaArm1.m * pandaArm1.xdot.nc.tool + pandaArm2.m * pandaArm2.xdot.nc.tool));
+        
+        % 6/ each agent evaluate C
+    
+        % motion space single agent matrix for robot1
+        pandaArm1.H = pandaArm1.wJo * pinv(pandaArm1.wJo);
+        % motion space single agent matrix for robot2
+        pandaArm2.H = pandaArm2.wJo * pinv(pandaArm2.wJo);
+        
+        % Cartesian Constraint matrix
+        C = [pandaArm1.H, -pandaArm2.H];
+        
+        % 7/ Compute FEASIBLE COOPERATIVE velocities (xdot_tilde)
+        pandaArm.xdot.fc.tool = [pandaArm1.H,  zeros(6); zeros(6), pandaArm2.H] * (eye(12) - (pinv(C) * C)) * [pandaArm.xdot.c.tool; pandaArm.xdot.c.tool];
+        
+        % 8/ Each agent runs new TPIK, where now the ee velocities tracking
+        % task is at the top of hierarchy
+    
+        % Task: Left Arm Cooperation
+        [Qp, ydotbar] = iCAT_task(pandaArm1.A.target, pandaArm1.wJo, Qp, ydotbar, pandaArm.xdot.fc.tool(1:6),...
+                                    0.0001,   0.01, 10);
+        % Task: Right Arm Cooperation 
+        [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.target, pandaArm2.wJo, Qp2, ydotbar2, pandaArm.xdot.fc.tool(7:12),...
+                                     0.0001,   0.01, 10);                                    
+                                                                
+        % Joints limit
+        % arm1 (left)
+        [Qp, ydotbar] = iCAT_task(pandaArm1.A.jl, pandaArm1.J.jl, Qp, ydotbar, ...
+                                  pandaArm1.xdot.jl, 0.0001,   0.01, 10);  
+        % arm2 (right)
+        [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.jl, pandaArm2.J.jl, Qp2, ydotbar2, ...
+                                  pandaArm2.xdot.jl, 0.0001,   0.01, 10);   
+    
+        % Minimum distance from table
+        % arm1 (left)
+        [Qp, ydotbar] = iCAT_task(pandaArm1.A.ma, pandaArm1.J.ma, Qp, ydotbar, ...
+                                  pandaArm1.xdot.alt, 0.0001,   0.01, 10);  
+    
+        % arm2 (right)
+        [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.ma, pandaArm2.J.ma, Qp2, ydotbar2, ...
+                                  pandaArm2.xdot.alt, 0.0001,   0.01, 10);    
+    
+       
     end
 
+    if mission.phase == 3
+         [Qp, ydotbar] = iCAT_task( pandaArm1.A.stop, pandaArm1.wJo, Qp, ydotbar, pandaArm1.xdot.tool, ...
+                                    0.0001,   0.01, 10);    
     
-    % this task should be the last one
+                  
+        [Qp2, ydotbar2] = iCAT_task( pandaArm2.A.stop, pandaArm2.wJo,  Qp2, ydotbar2,  pandaArm2.xdot.tool, ...
+                                    0.0001,   0.01, 10);             
+      
+    end
+
+
     [Qp, ydotbar] = iCAT_task(eye(7),...
-        eye(7),...
+        eye(7),....
         Qp, ydotbar,...
         zeros(7,1),...
         0.0001,   0.01, 10);    
-    % Task: Right Arm Cooperation
-    % ...
 
     % this task should be the last one
     [Qp2, ydotbar2] = iCAT_task(eye(7),...
@@ -239,7 +299,7 @@ for t = 0:deltat:end_time
 
     pandaArm1.x = tool_jacobian_L * pandaArm1.q_dot;
     pandaArm2.x = tool_jacobian_R * pandaArm2.q_dot;
-
+    
     % Integration
 	pandaArm1.q = pandaArm1.q(1:7) + pandaArm1.q_dot*deltat;    
     pandaArm2.q = pandaArm2.q(1:7) + pandaArm2.q_dot*deltat;  

@@ -11,7 +11,7 @@ pandaArm.xdot.alt = ((delta + min_alt) - pandaArm.wTt(3,4)) * [0; 0; 0; 0; 0; ga
 
 % Compute joint limits task reference ALWAYS
 % Create a velocity away from the limits => move to the middle between jlmax and jlmin
-pandaArm.xdot.jl = gain .* (pandaArm.jlmax + ((pandaArm.jlmax - pandaArm.q) .* 0.1) - pandaArm.q);
+pandaArm.xdot.jl = gain .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.q);
 
 switch mission.phase
     case 1
@@ -38,8 +38,8 @@ switch mission.phase
         % Stop any motions
         % -----------------------------------------------------------------
         % Tool position and orientation task reference
-        % pandaArm.xdot.tool(1:3) = ...;
-        % pandaArm.xdot.tool(4:6) = ...;
+        pandaArm.xdot.tool(1:3) = zeros(3, 1);
+        pandaArm.xdot.tool(4:6) = zeros(3, 1);
 end
 
 
