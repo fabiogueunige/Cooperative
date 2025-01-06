@@ -4,7 +4,7 @@ function [pandaArm] = ComputeActivationFunctions(pandaArm,mission)
 switch mission.phase
     case 1  % Reach the grasping point
         % Move-To
-        pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.go_to.tasks, mission.phase_time) * eye(6);
+        pandaArm.A.tool = ActionTransition("T", mission.actions.go_to.tasks, mission.actions.go_to.tasks, mission.phase_time) * eye(6);
     case 2 % Move the object holding it firmly
         
         % Deactivate previous task 

@@ -11,17 +11,22 @@ function [pandaArm] = ComputeActivationFunctions(pandaArm, mission)
 switch mission.phase
     case 1  % Reach the grasping point
         % Move-To
-        pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.go_to.tasks, mission.phase_time);
+        pandaArm.A.tool = ActionTransition("T", mission.actions.go_to.tasks, mission.actions.go_to.tasks, mission.phase_time);
         
     case 2 % Move the object holding it firmly
-        pandaArm.A.tool = 1 * ActionTransition("T", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);%0; % TODO remove after using the action transition functions
+        pandaArm.A.tool = ActionTransition("T", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);%0; % TODO remove after using the action transition functions
         % Rigid Grasp Constraint
-        pandaArm.A.rc = 1;% * ActionTransition("RC", mission.actions.go_to.tasks, mission.actions.coop_manip, mission.phase_time);
+        pandaArm.A.rc = ActionTransition("RC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
         
         % Move-To
-        pandaArm.A.target = 1 * ActionTransition("TC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
+        pandaArm.A.target = ActionTransition("TC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
+
     case 3 % STOP any motion
-        pandaArm.A.stop = 1 * ActionTransition("S", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);        
+         % Deactivate Move-to
+        pandaArm.A.target = ActionTransition("TC", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);
+
+        pandaArm.A.stop = ActionTransition("S", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);    
+       
 end
 %% INEQUALITY TASK ACTIVATION
 
