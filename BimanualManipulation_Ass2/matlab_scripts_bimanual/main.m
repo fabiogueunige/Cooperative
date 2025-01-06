@@ -49,7 +49,9 @@ theta = -44.9949;% FIXED ANGLE BETWEEN EE AND TOOL
 tool_length = 0.2104;% FIXED DISTANCE BETWEEN EE AND TOOL
 % Define trasnformation matrix from ee to tool.
 pandaArm.ArmL.eTt = eye(4);
-pandaArm.ArmL.eTt(1:3, 1:3) = rotation(0, 0, deg2rad(theta));
+
+%% DA CHIEDERE AD ANDRE
+pandaArm.ArmL.eTt(1:3, 1:3) = rotation(0, 0, deg2rad(theta)); 
 pandaArm.ArmL.eTt(1:3, 4) = [0; 0; tool_length];
 
 pandaArm.ArmR.eTt = pandaArm.ArmL.eTt;
@@ -79,7 +81,6 @@ pandaArm.ArmR.tTo = inv(pandaArm.ArmR.wTt) * pandaArm.ArmR.wTo;
 pandaArm.wTog = eye(4);
 % probably check possible error, chek in case wtg intread wto, depending
 % the rotation of the tool
-pandaArm.wTog(1:3, 1:3) = pandaArm.ArmR.wTo(1:3, 1:3);
 pandaArm.wTog(1:3, 4) = [0.65, -0.35, 0.28]';
 
 %% Mission configuration
@@ -95,6 +96,7 @@ mission.phase_time = 0;
 % JL = joint limits task
 % MA = minimum altitude task
 % RC = rigid constraint task
+% TC = tool constaint
 mission.actions.go_to.tasks = ["JL", "MA", "T"];
 mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "TC"];
 mission.actions.end_motion.tasks = ["JL", "MA", "RC"];
