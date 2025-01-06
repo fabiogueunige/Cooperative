@@ -38,11 +38,18 @@ uvms.Jt = [uvms.Jt_a uvms.Jt_v];
 % vehicle position Jacobian projected on <w>
 uvms.Jgv = [zeros(3,7) -uvms.wTv(1:3,1:3) zeros(3)];
 
+% vehicle attitude control Jacobian
+% to do
+
 
 w_kw = [0 0 1]';
 v_kw = uvms.vTw(1:3,1:3) * w_kw;
 % vehicle minimum altitude Jacobian
 uvms.Jma = [zeros(1,7) v_kw' zeros(1,3)];
+
+% vehicle horizonal attitude Jacobian
+uvms.Jha = [zeros(1,10) 1 0 0;
+            zeros(1,11) 1 0]; % not sure at all
 
 
 end

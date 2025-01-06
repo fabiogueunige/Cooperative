@@ -50,15 +50,15 @@ uvms.q = [-0.0031 0 0.0128 -1.2460 0.0137 0.0853-pi/2 0.0137]';
 % [x y z r(rot_x) p(rot_y) y(rot_z)]
 % RPY angles are applied in the following sequence
 % R(rot_x, rot_y, rot_z) = Rz (rot_z) * Ry(rot_y) * Rx(rot_x)
-uvms.p = [8.5 38.5 -38   0 -0.06 0.5]'; 
+uvms.p = [48.5 11.5 -33 pi/3 -pi/3 0]'; % initial xyz [48.5 11.5 -33]
 
 % defines the goal position for the end-effector/tool position task
-uvms.goalPosition = [12.2025   37.3748  -39.8860]';
+uvms.goalPosition = [50 -12.5 -33]';
 uvms.wRg = rotation(0, pi, pi/2);
 uvms.wTg = [uvms.wRg uvms.goalPosition; 0 0 0 1];
 
 % defines the goal position for the vehicle position task
-uvms.vehicleGoalPosition = [12.2025 37.3748 -39.8860]';
+uvms.vehicleGoalPosition = [50 -12.5 -33]';
 uvms.wRgv = rotation(0, 0, 0);
 uvms.wTgv = [uvms.wRgv uvms.vehicleGoalPosition; 0 0 0 1];
 
@@ -69,6 +69,16 @@ uvms = ReceiveUdpPackets(uvms, uAltitude);
 w_kw = [0 0 1]';
 v_kw = uvms.vTw(1:3,1:3) * w_kw;
 uvms.altitude = v_kw' * [0 0 uvms.sensorDistance]';
+
+% definition of action
+% MA = Minimum Altitude
+% HA = Horizontal Attitude
+% VP = Vehicle Position
+% AC = Attitude Control
+% AC0 = Altitude control to 0 (equality task)
+uvms.actions.safe_navigation.tasks = ["MA", "HA", "VP", "AC"];
+uvms.actions.landing.tasks = ["AC0", "HA", "VP"];
+
 
 tic
 for t = 0:deltat:end_time
@@ -91,15 +101,36 @@ for t = 0:deltat:end_time
     
     ydotbar = zeros(13,1);
     Qp = eye(13); 
-    % add all the other tasks here!
+    % add all the other taassasks here!
     % the sequence of iCAT_task calls defines the priority
     %[Qp, ydotbar] = iCAT_task(uvms.A.t,    uvms.Jt,    Qp, ydotbar, uvms.xdot.t,  0.0001,   0.01, 10);
+    % robot task sequence changes basing on the mission phase
+    if(mission.phase == 1)
+        % SAFETY NAVIGATION
+        
+        % MA
+        [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
     
-    [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
-    [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
+        % HA
+        [Qp, ydotbar] = iCAT_task(uvms.A.ha,    uvms.Jha,    Qp, ydotbar, uvms.xdot.ha,  0.0001,   0.01, 10);
+
+        % VP
+        [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
+        
+        % AC
+        % to do
+
+    elseif(mission.phase == 2)
+        % LANDING
+
+    end
+
     
-    [Qp, ydotbar] = iCAT_task(eye(13),     eye(13),    Qp, ydotbar, zeros(13,1),  0.0001,   0.01, 10);    % this task should be the last one
+    %[Qp, ydotbar] = iCAT_task(eye(13),     eye(13),    Qp, ydotbar, zeros(13,1),  0.0001,   0.01, 10);    % this task should be the last one
     
+
+    mission.phase_time = mission.phase_time + deltat;
+
     % get the two variables for integration
     uvms.q_dot = ydotbar(1:7);
     uvms.p_dot = ydotbar(8:13);
@@ -121,10 +152,16 @@ for t = 0:deltat:end_time
    
     % add debug prints here
     if (mod(t,0.1) == 0)
-        t
+        %phase = mission.phase;
+        t = mission.phase_time
         %uvms.sensorDistance
-        %uvms.xdot.gv'
-        uvms.A.ma
+        uvms.p(4:5)
+        uvms.xdot.ha
+        uvms.A.ha
+        %uvms.altitude
+        %mission.phase
+        
+        
     end
 
     % enable this to have the simulation approximately evolving like real
