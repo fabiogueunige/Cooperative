@@ -175,7 +175,7 @@ for t = 0:dt:Tf
     xdot = zeros(14, 1);
     xdot(1:7, 1) = pandaArm.ArmL.xdot.jl;
     [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
-    
+
     % right arm
     A = zeros(14);
     A(8:14,8:14) = pandaArm.ArmR.A.jl;
@@ -183,6 +183,24 @@ for t = 0:dt:Tf
     xdot(8:14, 1) = pandaArm.ArmR.xdot.jl;
     J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
     [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
+    
+    %% TEST joint limits
+    % A = zeros(14);
+    % A (1:7,1:7) = eye(7);
+    % J = zeros(14); % because already in joint space, non needed transofrmation from real space to joint space
+    % J(1,1) = 1;
+    % xdot = zeros(14, 1);
+    % xdot(1:7, 1) = pandaArm.ArmL.xdot.jl;
+    % xdot(1,1) = 1;
+    % [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
+    % disp(pandaArm.ArmL.A.jl)
+    % % right arm
+    % A = zeros(14);
+    % % A(8:14,8:14) = pandaArm.ArmR.A.jl;
+    % xdot = zeros(14, 1);
+    % xdot(8:14, 1) = pandaArm.ArmR.xdot.jl;
+    % J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
+    % [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
     
 
     %% MINIMUM ALTITUDE
@@ -262,7 +280,6 @@ for t = 0:dt:Tf
     [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
          Qp, ydotbar, zeros(14,1),  ...
          0.0001,   0.01, 10);    % this task should be the last one
-
     % get the two variables for integration
     pandaArm.ArmL.q_dot = ydotbar(1:7);
     pandaArm.ArmR.q_dot = ydotbar(8:14);
@@ -283,7 +300,7 @@ for t = 0:dt:Tf
         step(hudpsRight,[t;pandaArm.ArmR.q_dot]);
     else 
         step(hudps,[pandaArm.ArmL.q',pandaArm.ArmR.q']);
-        % step(hudps,[[0, 0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0, 0]]);
+        % step(hudps,[[0, 0, 0, 0, 0, -200, 0],[0, 0, 20, 0, 0, 0, 0]]);
     end
     % check if the mission phase should be changed
     mission.phase_time = mission.phase_time + dt;

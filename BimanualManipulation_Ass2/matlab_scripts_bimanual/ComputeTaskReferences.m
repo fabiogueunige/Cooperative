@@ -11,7 +11,6 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     delta = 0.05;
     min_alt = 0.15; % guarda se vanno definiti fuori
     
-
     pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [0; 0; 0; 0; 0; gain_alt];% generate a positive velocity, according with x-axis, before minimum altitude task is inactive
     pandaArm.ArmR.xdot.alt = ((delta + min_alt) - pandaArm.ArmR.wTt(3,4)) * [0; 0; 0; 0; 0; gain_alt];
     
@@ -21,7 +20,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     % joint limits corresponding to the actual Panda by Franka arm configuration
     pandaArm.ArmL.xdot.jl = gain_jl .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.ArmL.q);
     pandaArm.ArmR.xdot.jl = gain_jl .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.ArmR.q);
-
+    
     %% PROVA INTEGRATORE
     %persistent integrated_error_L;
 

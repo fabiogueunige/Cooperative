@@ -38,10 +38,12 @@ pandaArm.ArmL.A.jl = zeros(7, 7); % matrix with on diagonal all the sigmoids
 for k = 1:7
     % set a matix with on diagonal sum of two sigmoid, one for the maximum
     % limit and one for the minimum joints limit
-    pandaArm.ArmL.A.jl(k,k) = DecreasingBellShapedFunction(pandaArm.jlmin(k), pandaArm.jlmin(k) + pandaArm.jlmin(k) * 0.1, 0, 1, pandaArm.ArmL.q(k)) ...
-                        + IncreasingBellShapedFunction(pandaArm.jlmax(k) - pandaArm.jlmax(k) * 0.1, pandaArm.jlmax(k) , 0,1, pandaArm.ArmL.q(k));
+    pandaArm.ArmL.A.jl(k,k) = DecreasingBellShapedFunction(pandaArm.jlmin(k), ...
+        pandaArm.jlmin(k) + pandaArm.jlmin(k) * 0.1, 0, 1, pandaArm.ArmL.q(k)) ...
+        + IncreasingBellShapedFunction(pandaArm.jlmax(k) - pandaArm.jlmax(k) * 0.1,   ...
+        pandaArm.jlmax(k) , 0,1, pandaArm.ArmL.q(k));
 end
-disp(pandaArm.ArmL.A.jl)
+
 pandaArm.ArmR.A.jl = zeros(7, 7); % matrix with on diagonal all the sigmoids
 for k = 1:7
     % set a matix with on diagonal sum of two sigmoid, one for the maximum
@@ -50,5 +52,5 @@ for k = 1:7
                         + IncreasingBellShapedFunction(pandaArm.jlmax(k) - pandaArm.jlmax(k) * 0.1, pandaArm.jlmax(k) , 0,1, pandaArm.ArmR.q(k));
  
 end
-%disp(pandaArm.ArmL.A.jl)
+
 end
