@@ -50,7 +50,6 @@ tool_length = 0.2104;% FIXED DISTANCE BETWEEN EE AND TOOL
 % Define trasnformation matrix from ee to tool.
 pandaArm.ArmL.eTt = eye(4);
 
-%% DA CHIEDERE AD ANDRE
 pandaArm.ArmL.eTt(1:3, 1:3) = rotation(0, 0, deg2rad(theta)); 
 pandaArm.ArmL.eTt(1:3, 4) = [0; 0; tool_length];
 
@@ -92,10 +91,10 @@ mission.phase_time = 0;
 % JL = joint limits task
 % MA = minimum altitude task
 % RC = rigid constraint task
-% TC = tool constaint
+% CM = tool constaint
 % S = stop motion
 mission.actions.go_to.tasks = ["JL", "MA", "T"];
-mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "TC"];
+mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "CM"];
 mission.actions.end_motion.tasks = ["MA", "S"];
 
 % debug code
@@ -164,70 +163,51 @@ for t = 0:dt:Tf
     threshold = 0.01;
     weight = 10;
 
-    %% JOINT LIMIT
-    % we have 14 task, of one dimension each. Because we act directly on
-    % the single joint velocity
-    % in this case I am in space joint yet, so there isn't mapping beween
-    % the real space and joint space, so the J is an Identity matrix
-    A = zeros(14);
-    A (1:7,1:7) = (pandaArm.ArmL.A.jl);
-    J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
-    xdot = zeros(14, 1);
-    xdot(1:7, 1) = pandaArm.ArmL.xdot.jl;
-    [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
-
-    % right arm
-    A = zeros(14);
-    A(8:14,8:14) = pandaArm.ArmR.A.jl;
-    xdot = zeros(14, 1);
-    xdot(8:14, 1) = pandaArm.ArmR.xdot.jl;
-    J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
-    [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
-    
-    %% TEST joint limits
-    % A = zeros(14);
-    % A (1:7,1:7) = eye(7);
-    % J = zeros(14); % because already in joint space, non needed transofrmation from real space to joint space
-    % J(1,1) = 1;
-    % xdot = zeros(14, 1);
-    % xdot(1:7, 1) = pandaArm.ArmL.xdot.jl;
-    % xdot(1,1) = 1;
-    % [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
-    % disp(pandaArm.ArmL.A.jl)
-    % % right arm
-    % A = zeros(14);
-    % % A(8:14,8:14) = pandaArm.ArmR.A.jl;
-    % xdot = zeros(14, 1);
-    % xdot(8:14, 1) = pandaArm.ArmR.xdot.jl;
-    % J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
-    % [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
-    
-
-    %% MINIMUM ALTITUDE
-    % we have two task of dimension 6, we consider here the all robot dof.
-
-    A = zeros(6);
-    A (6, 6) = pandaArm.ArmL.A.ma;
-    J = zeros(6,14);
-    J(6,1:7) = pandaArm.ArmL.Jma;
-
-    % minimum altitude left
-    [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
-
-    A (6,6) = pandaArm.ArmR.A.ma; 
-    J = zeros(6, 14);
-    J(6,8:14) = pandaArm.ArmR.Jma;
-
-    % minimum altitude right
-    [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
-
-
-
-
-    %% GRASPING TASK
     if mission.phase == 1
-        A = eye(6) * pandaArm.A.tool;
 
+        % JOINT LIMIT
+        % we have 14 task, of one dimension each. Because we act directly on
+        % the single joint velocity
+        % in this case I am in space joint yet, so there isn't mapping beween
+        % the real space and joint space, so the J is an Identity matrix
+        A = zeros(14);
+        A (1:7,1:7) = (pandaArm.ArmL.A.jl);
+        J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
+        xdot = zeros(14, 1);
+        xdot(1:7, 1) = pandaArm.ArmL.xdot.jl;
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
+    
+        % right arm
+        A = zeros(14);
+        A(8:14,8:14) = pandaArm.ArmR.A.jl;
+        xdot = zeros(14, 1);
+        xdot(8:14, 1) = pandaArm.ArmR.xdot.jl;
+        J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
+        
+
+        % MINIMUM ALTITUDE
+        % we have two task of dimension 6, we consider here the all robot dof.
+    
+        A = zeros(6);
+        A (6, 6) = pandaArm.ArmL.A.ma;
+        J = zeros(6,14);
+        J(6,1:7) = pandaArm.ArmL.Jma;
+    
+        % minimum altitude left
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
+    
+        A (6,6) = pandaArm.ArmR.A.ma; 
+        J = zeros(6, 14);
+        J(6,8:14) = pandaArm.ArmR.Jma;
+    
+        % minimum altitude right
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
+
+
+        % GRASPING TASK
+
+        A = eye(6) * pandaArm.A.tool;
         % Left Arm
         %12 row, 6 ang vel, 6 lin vel 
         J = [pandaArm.ArmL.wJt, zeros(6,7)];
@@ -237,21 +217,58 @@ for t = 0:dt:Tf
         J = [zeros(6, 7), pandaArm.ArmR.wJt];
         [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
 
-    end
+    elseif mission.phase == 2
 
-    if mission.phase == 2
-        %% TARGET 
+        % JOINT LIMIT
+
+        A = zeros(14);
+        A (1:7,1:7) = (pandaArm.ArmL.A.jl);
+        J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
+        xdot = zeros(14, 1);
+        xdot(1:7, 1) = pandaArm.ArmL.xdot.jl;
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
+    
+        % right arm
+        A = zeros(14);
+        A(8:14,8:14) = pandaArm.ArmR.A.jl;
+        xdot = zeros(14, 1);
+        xdot(8:14, 1) = pandaArm.ArmR.xdot.jl;
+        J = eye(14); % because already in joint space, non needed transofrmation from real space to joint space
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, xdot, lambda, threshold, weight);
+        
+
+        % MINIMUM ALTITUDE
+        % we have two task of dimension 6, we consider here the all robot dof.
+    
+        A = zeros(6);
+        A (6, 6) = pandaArm.ArmL.A.ma;
+        J = zeros(6,14);
+        J(6,1:7) = pandaArm.ArmL.Jma;
+    
+        % minimum altitude left
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
+    
+        A (6,6) = pandaArm.ArmR.A.ma; 
+        J = zeros(6, 14);
+        J(6,8:14) = pandaArm.ArmR.Jma;
+    
+        % minimum altitude right
+        [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
+
+
+        % TARGET 
         A = eye(6) * pandaArm.A.target;
 
         % Left Arm
         J = [pandaArm.ArmL.wJo, zeros(6,7)];
         [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
 
+
         % Right Arm
         J = [zeros(6,7), pandaArm.ArmR.wJo];
         [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
 
-        %% RIGID CONSTRAINT TASK
+        % RIGID CONSTRAINT TASK
         A = eye(6) * pandaArm.A.rc;
 
         % Left arm
@@ -262,9 +279,7 @@ for t = 0:dt:Tf
         J = [zeros(6,7), pandaArm.ArmL.wJo - pandaArm.ArmR.wJo];
         [Qp, ydotbar] = iCAT_task(A, J, Qp, ydotbar, pandaArm.xdot.rc, lambda, threshold, weight);
 
-
-    end
-    if mission.phase == 3
+    elseif mission.phase == 3
         % Left arm
         J = [pandaArm.ArmL.wJo, zeros(6,7)];
         [Qp, ydotbar] = iCAT_task(pandaArm.A.stop, J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);

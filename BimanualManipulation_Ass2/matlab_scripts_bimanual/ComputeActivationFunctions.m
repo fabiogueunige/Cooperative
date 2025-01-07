@@ -19,11 +19,11 @@ switch mission.phase
         pandaArm.A.rc = ActionTransition("RC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
         
         % Move-To
-        pandaArm.A.target = ActionTransition("TC", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
+        pandaArm.A.target = ActionTransition("CM", mission.actions.go_to.tasks, mission.actions.coop_manip.tasks, mission.phase_time);
 
     case 3 % STOP any motion
          % Deactivate Move-to
-        pandaArm.A.target = ActionTransition("TC", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);
+        pandaArm.A.target = ActionTransition("CM", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);
 
         pandaArm.A.stop = ActionTransition("S", mission.actions.coop_manip.tasks, mission.actions.end_motion.tasks, mission.phase_time) * eye(6);    
        
