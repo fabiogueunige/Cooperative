@@ -49,7 +49,11 @@ uvms.Jha = [zeros(1,10) 1 0 0;
 uvms.Jvh = [zeros(1,10) 0 0 1];
 
 % vehicle position Jacobian projected on <w>
+uvms.Jgv2 = [zeros(2,7) uvms.wTv(1:2,1:3) zeros(2)];
+uvms.Jva = uvms.Jma;
+
 uvms.Jgv = [zeros(3,7) uvms.wTv(1:3,1:3) zeros(3)];
+
 
 % attitude control Jacobian
 uvms.Jac = [zeros(2,10) [1 0 0; 0 1 0]];

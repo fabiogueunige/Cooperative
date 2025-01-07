@@ -106,15 +106,14 @@ for t = 0:deltat:end_time
     % the sequence of iCAT_task calls defines the priority
     % robot task sequence changes basing on the mission phase
    
-    
+    % MA (minimum altitude: z; SAFETY TASK)
+    [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
+
     % HA (horizontal attitude: roll, pitch; SAFETY TASK)
     [Qp, ydotbar] = iCAT_task(uvms.A.ha,    uvms.Jha,    Qp, ydotbar, uvms.xdot.ha,  0.0001,   0.01, 10);
     
     if(mission.phase == 1)
         % SAFETY WAYPOINT NAVIGATION
-        % MA (minimum altitude: z; SAFETY TASK)
-        [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
-
 
         % VH (vehicle heading control: yaw; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
@@ -132,16 +131,14 @@ for t = 0:deltat:end_time
         [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
         
         % VP (vehicle position control: x, y, z; CONTROL TASK)
-        [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv2,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
+        [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
         
         % VA (vehicle altitude control) 
-        [Qp, ydotbar] = iCAT_task(uvms.A.va,    uvms.Jva,    Qp, ydotbar, uvms.xdot.va,  0.0001,   0.01, 10);
+        [Qp, ydotbar] = iCAT_task(uvms.A.,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
 
     elseif(mission.phase == 3) 
         % FIXED BASED MANIPULATION ACTION
-        % MA (minimum altitude: z; SAFETY TASK)
-        [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
-
+        
         % VH (vehicle heading control: yaw; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
 

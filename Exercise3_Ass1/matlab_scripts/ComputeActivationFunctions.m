@@ -6,7 +6,13 @@ function [uvms] = ComputeActivationFunctions(uvms, mission)
 uvms.A.t = eye(6);
 
 % vehicle position task
-uvms.A.gv = eye(3); % equality task
+if mission.phase == 2
+    uvms.A.gv = eye(2); % equality task
+    uvms.A.va = DecreasingBellShapedFunction(1, 1.5, 0, 1, uvms.altitude);;
+else
+    uvms.A.gv = eye(3); % equality task
+end
+
 uvms.A.vh = 1; % equality task
 
 % vehicle minimum altitude task
