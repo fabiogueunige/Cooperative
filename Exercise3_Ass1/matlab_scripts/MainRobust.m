@@ -50,7 +50,7 @@ uvms.q = [-0.0031 0 0.0128 -1.2460 0.0137 0.0853-pi/2 0.0137]';
 % [x y z r(rot_x) p(rot_y) y(rot_z)]
 % RPY angles are applied in the following sequence
 % R(rot_x, rot_y, rot_z) = Rz (rot_z) * Ry(rot_y) * Rx(rot_x)
-uvms.p = [48.5 11.5 -33 pi/3 -pi/3 0]'; % initial xyz [48.5 11.5 -33]
+uvms.p = [48.5 11.5 -33 0 0 pi/3]'; % initial xyz [48.5 11.5 -33]
 
 % defines the goal position for the end-effector/tool position task
 uvms.goalPosition = [50 -12.5 -33]';
@@ -118,10 +118,24 @@ for t = 0:deltat:end_time
         [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
         
         % AC
-        % to do
+        % da sistemare perché funziona male
+        %[Qp, ydotbar] = iCAT_task(uvms.A.ac,    uvms.Jac,    Qp, ydotbar, uvms.xdot.ac,  0.0001,   0.01, 10);
+        
 
     elseif(mission.phase == 2)
         % LANDING
+
+        % Altitude Control to 0
+        % non funzia (dio bono)
+        [Qp, ydotbar] = iCAT_task(uvms.A.ac0, -uvms.Jma  ,    Qp, ydotbar, uvms.xdot.ac0,  0.0001,   0.01, 10);
+        
+        
+        % HA
+        [Qp, ydotbar] = iCAT_task(uvms.A.ha,    uvms.Jha,    Qp, ydotbar, uvms.xdot.ha,  0.0001,   0.01, 10);
+        
+        % VP (only x and y)
+        [Qp, ydotbar] = iCAT_task(uvms.A.gv(1:2, 1:2),    uvms.Jgv(1:2, :),    Qp, ydotbar, uvms.xdot.gv(1:2),  0.0001,   0.01, 10);
+        
 
     end
 

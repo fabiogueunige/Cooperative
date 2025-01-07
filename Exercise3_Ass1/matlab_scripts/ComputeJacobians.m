@@ -39,7 +39,8 @@ uvms.Jt = [uvms.Jt_a uvms.Jt_v];
 uvms.Jgv = [zeros(3,7) -uvms.wTv(1:3,1:3) zeros(3)];
 
 % vehicle attitude control Jacobian
-% to do
+uvms.Jac = [zeros(3,7) zeros(3) eye(3)];
+
 
 
 w_kw = [0 0 1]';
