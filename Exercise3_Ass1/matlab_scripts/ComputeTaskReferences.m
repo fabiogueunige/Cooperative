@@ -29,19 +29,18 @@ uvms.xdot.ac = 0.6 * ang(1:2);
 if mission.phase == 1    
     uvms.xdot.vh = 0.6 * ang(3);
     uvms.xdot.vh = Saturate(uvms.xdot.vh, 0.8);
-elseif mission.phase == 2
+elseif mission.phase == 2 || mission.phase == 3
     % new target for veiche heading control
     target_vec = uvms.rock_center(1:2) - uvms.p(1:2);
-    unit_vec = target_vec / abs(target_vec);
-    angle = atan2(unit_vec(2), unit_vec(1));
-    disp(angle)
-    uvms.xdot.vh = -0.6 * (0 - angle);
-  
+    unit_vec = target_vec / norm(target_vec);    
+    uvms.xdot.vh = 1 * (0 - atan2(unit_vec(2), unit_vec(1)) - atan2(uvms.wTv(2, 1), uvms.wTv(1, 1)));
 end
 
+% altitude control for landing
+uvms.xdot.acl = 0.6 * (0 - uvms.altitude);
+
 % grasping task reference
-% error between goal and tool
-[ang, lin] = CartError(uvms.wTg, uvms.wTt);
-uvms.xdot.gr = 0.6 * [zeros(3,1); lin];
+[ang, lin] = CartError(uvms.wTg, uvms.wTt); % error between goal and tool
+uvms.xdot.rn = 0.6 * [zeros(3,1); lin];
 
 

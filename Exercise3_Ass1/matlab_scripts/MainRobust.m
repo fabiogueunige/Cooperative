@@ -6,7 +6,7 @@ close all
 
 % Simulation variables (integration and final time)
 deltat = 0.005;
-end_time = 25;
+end_time = 30;
 loop = 1;
 maxloops = ceil(end_time/deltat);
 
@@ -106,15 +106,16 @@ for t = 0:deltat:end_time
     % the sequence of iCAT_task calls defines the priority
     % robot task sequence changes basing on the mission phase
    
-    % MA (minimum altitude: z; SAFETY TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
-
-    % HA (horizontal attitude: roll, pitch; SAFETY TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.ha,    uvms.Jha,    Qp, ydotbar, uvms.xdot.ha,  0.0001,   0.01, 10);
     
     if(mission.phase == 1)
         % SAFETY WAYPOINT NAVIGATION
 
+        % MA (minimum altitude: z; SAFETY TASK)
+        [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
+    
+        % HA (horizontal attitude: roll, pitch; SAFETY TASK)
+        [Qp, ydotbar] = iCAT_task(uvms.A.ha,    uvms.Jha,    Qp, ydotbar, uvms.xdot.ha,  0.0001,   0.01, 10);
+        
         % VH (vehicle heading control: yaw; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
         
@@ -127,25 +128,33 @@ for t = 0:deltat:end_time
     elseif(mission.phase == 2)
         % LANDING
 
+        % HA (horizontal attitude: roll, pitch; SAFETY TASK)
+        [Qp, ydotbar] = iCAT_task(uvms.A.ha,    uvms.Jha,    Qp, ydotbar, uvms.xdot.ha,  0.0001,   0.01, 10);
+        
+        % ACL (vehicle altitude control for landing, z; CONTROL TASK)
+        [Qp, ydotbar] = iCAT_task(1,    uvms.Jma,    Qp, ydotbar, uvms.xdot.acl,  0.0001,   0.01, 10);
+        
+
         % VH (vehicle heading control: yaw; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
         
         % VP (vehicle position control: x, y, z; CONTROL TASK)
-        [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
+        [Qp, ydotbar] = iCAT_task(uvms.A.gv(1:2, 1:2),    uvms.Jgv(1:2, :),    Qp, ydotbar, uvms.xdot.gv(1:2),  0.0001,   0.01, 10);
         
     elseif(mission.phase == 3) 
         % FIXED BASED MANIPULATION ACTION
         
-        % % VH (vehicle heading control: yaw; CONTROL TASK)
-        % [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
+        %  VH (vehicle heading control: yaw; CONTROL TASK)
+        [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
 
-        % % VP (vehicle position control: x, y, z; CONTROL TASK)
-        % [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
-        % 
-        % % GT (grasping task: q1, q2, q3, q4, q5, q6, q7; CONTROL TASK)
-        % [Qp, ydotbar] = iCAT_task(eye(6),    [uvms.Jt_a zeros(6)],    Qp, ydotbar, uvms.xdot.gr,  0.0001,   0.01, 10);
-        % 
+        %  VP (vehicle position control: x, y, z; CONTROL TASK)
+        [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
         
+        %  RN (reaching nodule task: q1, q2, q3, q4, q5, q6, q7; CONTROL TASK)
+        [Qp, ydotbar] = iCAT_task(eye(6),    [uvms.Jt_a zeros(6)],    Qp, ydotbar, uvms.xdot.rn,  0.0001,   0.01, 10);
+        
+    elseif(mission.phase == 4)
+        % DO NOTHING
 
 
     end

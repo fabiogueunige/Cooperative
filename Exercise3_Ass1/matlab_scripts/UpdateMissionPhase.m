@@ -18,10 +18,17 @@ function [uvms, mission] = UpdateMissionPhase(uvms, mission)
             % unit_vec = target_vec / abs(target_vec);
             % angle = atan2(unit_vec(2), unit_vec(1));
             
-            if abs(uvms.angle) < deg2rad(1)
+            if uvms.altitude <= 1/100 %abs(uvms.xdot.vh) < 1/100 
                 mission.phase = 3;
                 mission.phase_time = 0;
             end
+        case 3
+            [ang, lin] = CartError(uvms.wTt, uvms.wTg);
+            if (lin <= 1/10) & (ang <= deg2rad(1))
+                mission.phase = 4;
+                mission.phase_time = 0;
+            end
+
     end
 end
 
