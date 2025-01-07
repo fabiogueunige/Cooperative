@@ -17,9 +17,11 @@ end
 uvms.q_dot = [0 0 0 0 0 0 0]';
 uvms.p_dot = [0 0 0 0 0 0]';
 
+uvms.rock_center = [12.2025   37.3748  -39.8860]'; % in world frame coordinates
+
 % joint limits corresponding to the actual MARIS arm configuration
-uvms.jlmin  = [-2.9;-1.6;-2.9;-2.95;-2.9;-1.65;-2.8];
-uvms.jlmax  = [2.9;1.65;2.9;0.01;2.9;1.25;2.8];
+uvms.jlmin  = [-2.9; -1.6; -2.9; -2.95; -2.9; -1.65; -2.8];
+uvms.jlmax  = [2.9; 1.65; 2.9; 0.01; 2.9; 1.25; 2.8];
 
 % to be computed at each time step
 uvms.wTv = eye(4,4);
@@ -52,6 +54,7 @@ uvms.A.jl = zeros(7,7);
 uvms.A.mu = 0;
 uvms.A.ha = zeros(1,1);
 uvms.A.t = zeros(6,6);
+uvms.angle = 500;
 
 end
 
