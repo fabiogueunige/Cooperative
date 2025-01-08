@@ -80,7 +80,6 @@ uvms.altitude = v_kw' * [0 0 uvms.sensorDistance]';
 uvms.actions.safe_navigation.tasks = ["MA", "HA", "VP", "AC"];
 uvms.actions.landing.tasks = ["AC0", "HA", "VP"];
 
-
 tic
 for t = 0:deltat:end_time
     % update all the involved variables
@@ -131,12 +130,11 @@ for t = 0:deltat:end_time
         % HA (horizontal attitude: roll, pitch; SAFETY TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.ha,    uvms.Jha,    Qp, ydotbar, uvms.xdot.ha,  0.0001,   0.01, 10);
         
-        % ACL (vehicle altitude control for landing, z; CONTROL TASK)
-        [Qp, ydotbar] = iCAT_task(1,    uvms.Jma,    Qp, ydotbar, uvms.xdot.acl,  0.0001,   0.01, 10);
-        
-
         % VH (vehicle heading control: yaw; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
+        
+        % ACL (vehicle altitude control for landing, z; CONTROL TASK)
+        [Qp, ydotbar] = iCAT_task(1,    uvms.Jma,    Qp, ydotbar, uvms.xdot.acl,  0.0001,   0.01, 10);
         
         % VP (vehicle position control: x, y, z; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.gv(1:2, 1:2),    uvms.Jgv(1:2, :),    Qp, ydotbar, uvms.xdot.gv(1:2),  0.0001,   0.01, 10);
@@ -144,13 +142,16 @@ for t = 0:deltat:end_time
     elseif(mission.phase == 3) 
         % FIXED BASED MANIPULATION ACTION
         
-        %  VH (vehicle heading control: yaw; CONTROL TASK)
+        % JL (joint limits: q1, q2, q3, q4, q5, q6, q7; SAFETY TASK)
+        [Qp, ydotbar] = iCAT_task(uvms.A.jl,    uvms.Jjl,    Qp, ydotbar, uvms.xdot.jl,  0.0001,   0.01, 10);
+
+        % VH (vehicle heading control: yaw; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
 
-        %  VP (vehicle position control: x, y, z; CONTROL TASK)
+        % VP (vehicle position control: x, y, z; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
         
-        %  RN (reaching nodule task: q1, q2, q3, q4, q5, q6, q7; CONTROL TASK)
+        % RN (reaching nodule: q1, q2, q3, q4, q5, q6, q7; CONTROL TASK)
         [Qp, ydotbar] = iCAT_task(eye(6),    [uvms.Jt_a zeros(6)],    Qp, ydotbar, uvms.xdot.rn,  0.0001,   0.01, 10);
         
     elseif(mission.phase == 4)

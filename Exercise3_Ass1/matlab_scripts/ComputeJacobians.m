@@ -45,6 +45,8 @@ uvms.Jma = [zeros(1,7) v_kw' zeros(1,3)];
 uvms.Jha = [zeros(1,10) 1 0 0;
             zeros(1,10) 0 1 0];
 
+% vehicle joint limits Jacobian
+uvms.Jjl = [eye(7) zeros(7,6)];
 % vehicle heading control Jacobian
 uvms.Jvh = [zeros(1,10) 0 0 1];
 
