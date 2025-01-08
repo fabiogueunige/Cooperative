@@ -9,11 +9,14 @@ uvms.xdot.t = 0.2 * [ang; lin];
 uvms.xdot.t(1:3) = Saturate(uvms.xdot.t(1:3), 0.2);
 uvms.xdot.t(4:6) = Saturate(uvms.xdot.t(4:6), 0.2);
 
-% task reference for minimum altitude
+% task reference for minimum altituJvhde
 uvms.xdot.ma = 0.2 * (2 - uvms.altitude);
 
 % task reference for horizontal attitude
 uvms.xdot.ha = -0.4 * (uvms.p(4:5) - [deg2rad(0); deg2rad(0)]);
+
+% task reference for joint limits
+uvms.xdot.jl = 0.5 * (((uvms.jlmax - uvms.jlmin)/2) - uvms.q);
 
 % computing angular and linear error between vehicle goal and vehicle
 [ang, lin] = CartError(uvms.wTgv, uvms.wTv);
@@ -33,7 +36,12 @@ elseif mission.phase == 2 || mission.phase == 3
     % new target for veiche heading control
     target_vec = uvms.rock_center(1:2) - uvms.p(1:2);
     unit_vec = target_vec / norm(target_vec);    
+    uvms.angle = atan2(unit_vec(2), unit_vec(1)) + atan2(uvms.wTv(2, 1), uvms.wTv(1, 1));
     uvms.xdot.vh = 1 * (0 - atan2(unit_vec(2), unit_vec(1)) - atan2(uvms.wTv(2, 1), uvms.wTv(1, 1)));
+    
+    if(mission.phase ==2 && abs(uvms.xdot.vh) <=1/100 && uvms.angle > deg2rad(5))
+        uvms.xdot.vh = sign(uvms.xdot.vh) * 0.5;
+    end
 end
 
 % altitude control for landing

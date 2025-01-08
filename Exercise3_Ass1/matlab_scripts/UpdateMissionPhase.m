@@ -1,6 +1,7 @@
 function [uvms, mission] = UpdateMissionPhase(uvms, mission)
     switch mission.phase
         case 1  
+
         % computing the errors for the go-to action defining tasks
             % se l'errore è minore di max error allora mission.phase = 2
             [ang, lin] = CartError(uvms.wTv, uvms.wTgv);
@@ -11,22 +12,22 @@ function [uvms, mission] = UpdateMissionPhase(uvms, mission)
             if (lin <= 1/10) & (ang <= deg2rad(1))
                 mission.phase = 2;
                 mission.phase_time = 0;
+                uvms.prev_action = uvms.act_action;
+                uvms.act_action = uvms.actions.landing.tasks;
             end
         case 2
-
-            % target_vec = uvms.rock_center(1:2) - uvms.p(1:2);
-            % unit_vec = target_vec / abs(target_vec);
-            % angle = atan2(unit_vec(2), unit_vec(1));
-            
-            if uvms.altitude <= 1/100 %abs(uvms.xdot.vh) < 1/100 
+            if uvms.altitude <= 1/100 & uvms.angle <= deg2rad(5)
                 mission.phase = 3;
                 mission.phase_time = 0;
+                uvms.prev_action = uvms.act_action;
+                uvms.act_action = uvms.actions.fixed_base_manipulation.tasks;
             end
         case 3
             [ang, lin] = CartError(uvms.wTt, uvms.wTg);
-            if (lin <= 1/10) & (ang <= deg2rad(1))
+            if (lin <= 1/100) & (ang <= deg2rad(1))
                 mission.phase = 4;
                 mission.phase_time = 0;
+                uvms.prev_action = uvms.act_action;
             end
 
     end
