@@ -36,7 +36,12 @@ elseif mission.phase == 2 || mission.phase == 3
     % new target for veiche heading control
     target_vec = uvms.rock_center(1:2) - uvms.p(1:2);
     unit_vec = target_vec / norm(target_vec);    
+    uvms.angle = atan2(unit_vec(2), unit_vec(1)) + atan2(uvms.wTv(2, 1), uvms.wTv(1, 1));
     uvms.xdot.vh = 1 * (0 - atan2(unit_vec(2), unit_vec(1)) - atan2(uvms.wTv(2, 1), uvms.wTv(1, 1)));
+    
+    if(mission.phase ==2 && abs(uvms.xdot.vh) <=1/100 && uvms.angle > deg2rad(5))
+        uvms.xdot.vh = sign(uvms.xdot.vh) * 0.5;
+    end
 end
 
 % altitude control for landing
