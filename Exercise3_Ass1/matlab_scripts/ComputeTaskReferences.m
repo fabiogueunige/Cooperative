@@ -9,11 +9,14 @@ uvms.xdot.t = 0.2 * [ang; lin];
 uvms.xdot.t(1:3) = Saturate(uvms.xdot.t(1:3), 0.2);
 uvms.xdot.t(4:6) = Saturate(uvms.xdot.t(4:6), 0.2);
 
-% task reference for minimum altitude
+% task reference for minimum altituJvhde
 uvms.xdot.ma = 0.2 * (2 - uvms.altitude);
 
 % task reference for horizontal attitude
 uvms.xdot.ha = -0.4 * (uvms.p(4:5) - [deg2rad(0); deg2rad(0)]);
+
+% task reference for joint limits
+uvms.xdot.jl = 0.5 * (((uvms.jlmax - uvms.jlmin)/2) - uvms.q);
 
 % computing angular and linear error between vehicle goal and vehicle
 [ang, lin] = CartError(uvms.wTgv, uvms.wTv);
