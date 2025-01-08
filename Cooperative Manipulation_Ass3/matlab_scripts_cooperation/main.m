@@ -139,10 +139,17 @@ for t = 0:deltat:end_time
     % the vector of the vehicle linear and angular velocities are assumed
     % projected on <v>
     
+    % single agent initialization
     ydotbar = zeros(7,1);
     Qp = eye(7);
     ydotbar2 = zeros(7,1);
     Qp2 = eye(7);
+    % cooperation
+    ydotbar_coop = ydotbar;
+    Qp_coop = Qp;
+    ydotbar2_coop = ydotbar2;
+    Qp2_coop = Qp2;
+    
 
     % Used by the Move-To task
     tool_jacobian_L = zeros(6, 7);
@@ -234,30 +241,31 @@ for t = 0:deltat:end_time
         % 8/ Each agent runs new TPIK, where now the ee velocities tracking
         % task is at the top of hierarchy
     
-        % Task: Left Arm Cooperation
-        [Qp, ydotbar] = iCAT_task(pandaArm1.A.target, pandaArm1.wJo, Qp, ydotbar, ...
+        % Task: Arms Cooperation
+        % left arm
+        [Qp_coop, ydotbar_coop] = iCAT_task(pandaArm1.A.target, pandaArm1.wJo, Qp_coop, ydotbar_coop, ...
                                   pandaArm.xdot.fc.tool(1:6), 0.0001,   0.01, 10);
-        % Task: Right Arm Cooperation 
-        [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.target, pandaArm2.wJo, Qp2, ydotbar2, ...
+
+        % % Task: Right Arm Cooperation 
+        [Qp2_coop, ydotbar2_coop] = iCAT_task(pandaArm2.A.target, pandaArm2.wJo, Qp2_coop, ydotbar2_coop, ...
                                     pandaArm.xdot.fc.tool(7:12), 0.0001,   0.01, 10);                                    
                                                                 
-        % Joints limit
-        % arm1 (left)
-        [Qp, ydotbar] = iCAT_task(pandaArm1.A.jl, pandaArm1.J.jl, Qp, ydotbar, ...
+        % Joints limit cooperative
+        %left arm
+        [Qp_coop, ydotbar_coop]  = iCAT_task(pandaArm1.A.jl, pandaArm1.J.jl, Qp_coop, ydotbar_coop,  ...
                                   pandaArm1.xdot.jl, 0.0001,   0.01, 10);  
         % arm2 (right)
-        [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.jl, pandaArm2.J.jl, Qp2, ydotbar2, ...
-                                    pandaArm2.xdot.jl, 0.0001,   0.01, 10);   
+        [Qp2_coop, ydotbar2_coop] = iCAT_task(pandaArm2.A.jl, pandaArm2.J.jl, Qp2_coop, ydotbar2_coop, ...
+                                      pandaArm2.xdot.jl, 0.0001,   0.01, 10);   
     
-        % Minimum distance from table
-        % arm1 (left)
-        [Qp, ydotbar] = iCAT_task(pandaArm1.A.ma, pandaArm1.J.ma, Qp, ydotbar, ...
+        % Minimum distance from table cooperative
+        [Qp_coop, ydotbar_coop]  = iCAT_task(pandaArm1.A.ma, pandaArm1.J.ma, Qp_coop, ydotbar_coop, ...
                                   pandaArm1.xdot.alt, 0.0001,   0.01, 10);  
     
         % arm2 (right)
-        [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.ma, pandaArm2.J.ma, Qp2, ydotbar2, ...
+        [Qp2_coop, ydotbar2_coop] = iCAT_task(pandaArm2.A.ma, pandaArm2.J.ma, Qp2_coop, ydotbar2_coop,...
                                   pandaArm2.xdot.alt, 0.0001,   0.01, 10);    
-    
+
        
     end
 
@@ -287,8 +295,14 @@ for t = 0:deltat:end_time
 
 
     % get the two variables for integration
-    pandaArm1.q_dot = ydotbar(1:7);
-    pandaArm2.q_dot = ydotbar2(1:7);
+    if mission.phase == 1 || mission.phase == 3
+        pandaArm1.q_dot = ydotbar(1:7);
+        pandaArm2.q_dot = ydotbar2(1:7);
+    elseif mission.phase == 2
+        pandaArm1.qdot = ydotbar_coop(1:7);
+        disp(pandaArm1.qdot)
+        pandaArm2.q_dot = ydotbar2_coop(1:7);
+    end
 
     pandaArm1.x = tool_jacobian_L * pandaArm1.q_dot;
     pandaArm2.x = tool_jacobian_R * pandaArm2.q_dot;
@@ -323,7 +337,7 @@ for t = 0:deltat:end_time
     loop = loop + 1;
     % add debug prints here
     if (mod(t,0.1) == 0)
-        t 
+        t; 
         mission.phase
     end
     
