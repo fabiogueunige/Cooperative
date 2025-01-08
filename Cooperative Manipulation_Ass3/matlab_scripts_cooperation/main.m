@@ -145,10 +145,10 @@ for t = 0:deltat:end_time
     ydotbar2 = zeros(7,1);
     Qp2 = eye(7);
     % cooperation
-    ydotbar_coop = ydotbar;
-    Qp_coop = Qp;
-    ydotbar2_coop = ydotbar2;
-    Qp2_coop = Qp2;
+    ydotbar_coop = zeros(7,1);
+    Qp_coop = eye(7);
+    ydotbar2_coop = zeros(7,1);
+    Qp2_coop = eye(7);
     
 
     % Used by the Move-To task
@@ -199,7 +199,7 @@ for t = 0:deltat:end_time
     end
     
 
-    if(mission.phase ==2)
+    if(mission.phase == 2)
 
         %% COOPERATION hierarchy
         % 1/ Compute task references
@@ -240,7 +240,13 @@ for t = 0:deltat:end_time
         
         % 8/ Each agent runs new TPIK, where now the ee velocities tracking
         % task is at the top of hierarchy
-    
+
+        % cooperation
+        ydotbar_coop = zeros(7,1);
+        Qp_coop = eye(7);
+        ydotbar2_coop = zeros(7,1);
+        Qp2_coop = eye(7);
+
         % Task: Arms Cooperation
         % left arm
         [Qp_coop, ydotbar_coop] = iCAT_task(pandaArm1.A.target, pandaArm1.wJo, Qp_coop, ydotbar_coop, ...
@@ -280,18 +286,18 @@ for t = 0:deltat:end_time
     end
 
 
-    [Qp, ydotbar] = iCAT_task(eye(7),...
-        eye(7),....
-        Qp, ydotbar,...
-        zeros(7,1),...
-        0.0001,   0.01, 10);    
-
-    % this task should be the last one
-    [Qp2, ydotbar2] = iCAT_task(eye(7),...
-        eye(7),....
-        Qp2, ydotbar2,...
-        zeros(7,1),...
-        0.0001,   0.01, 10);    
+    % [Qp_coop, ydotbar] = iCAT_task(eye(7),...
+    %     eye(7),....
+    %     Qp, ydotbar,...
+    %     zeros(7,1),...
+    %     0.0001,   0.01, 10);    
+    % 
+    % % this task should be the last one
+    % [Qp2, ydotbar2] = iCAT_task(eye(7),...
+    %     eye(7),....
+    %     Qp2, ydotbar2,...
+    %     zeros(7,1),...
+    %     0.0001,   0.01, 10);    
 
 
     % get the two variables for integration
@@ -303,7 +309,7 @@ for t = 0:deltat:end_time
         disp(pandaArm1.qdot)
         pandaArm2.q_dot = ydotbar2_coop(1:7);
     end
-
+    
     pandaArm1.x = tool_jacobian_L * pandaArm1.q_dot;
     pandaArm2.x = tool_jacobian_R * pandaArm2.q_dot;
     

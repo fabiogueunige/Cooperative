@@ -68,14 +68,13 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo] * ydotbar = 0
             % J * ydot = xdot --> xdot = 0
             pandaArm.xdot.rc = zeros(6,1);
-
-           
             
             % LEFT ARM
             % -----------------------------------------------------------------        
             % Object position and orientation task reference
-            [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmL.wTo);
+            [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmL.wTo); 
             pandaArm.ArmL.xdot.tool = gain_obj * [ang; lin];
+
             % limit the requested velocities...
             pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
             pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
@@ -85,6 +84,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % Object position and orientation task reference
             [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmR.wTo);
             pandaArm.ArmR.xdot.tool = gain_obj * [ang; lin];
+
             % limit the requested velocities...
             pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
             pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
@@ -103,7 +103,6 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             pandaArm.ArmR.xdot.tool(1:3) = zeros(3,1);
             pandaArm.ArmR.xdot.tool(4:6) = zeros(3,1);
     end
-end
 
 
- 
+    end

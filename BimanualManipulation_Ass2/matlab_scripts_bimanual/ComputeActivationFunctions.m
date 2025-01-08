@@ -7,23 +7,15 @@ function [pandaArm] = ComputeActivationFunctions(pandaArm, mission)
 %current = set of actions of actual task
 
 %% EQUALITY TASK ACTIVATION
-pandaArm.ArmL.A.tool = eye(6) * ActionTransition("T", mission.prev_action, mission.current_action, mission.phase_time);
-pandaArm.ArmR.A.tool = eye(6) * ActionTransition("T", mission.prev_action, mission.current_action, mission.phase_time);
 
 if mission.phase == 2
     pandaArm.A.rc = eye(6);
-    pandaArm.ArmL.A.tool = zeros(6);
-    pandaArm.ArmR.A.tool = zeros(6);
 else
     pandaArm.A.rc = zeros(6);
 end
 
-
-pandaArm.ArmL.A.target = eye(6) * ActionTransition("CM", mission.prev_action, mission.current_action, mission.phase_time);
-pandaArm.ArmR.A.target = eye(6) * ActionTransition("CM", mission.prev_action, mission.current_action, mission.phase_time);
-
-pandaArm.ArmL.A.stop = eye(6) * ActionTransition("S", mission.prev_action, mission.current_action, mission.phase_time);  
-pandaArm.ArmR.A.stop = eye(6) * ActionTransition("S", mission.prev_action, mission.current_action, mission.phase_time);  
+pandaArm.ArmL.A.tool = eye(6) * ActionTransition("T", mission.prev_action, mission.current_action, mission.phase_time);
+pandaArm.ArmR.A.tool = eye(6) * ActionTransition("T", mission.prev_action, mission.current_action, mission.phase_time);
 
 %% INEQUALITY TASK ACTIVATION
 

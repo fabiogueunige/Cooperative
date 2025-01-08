@@ -90,7 +90,7 @@ pandaArm.wTog(1:3, 4) = [0.65, -0.35, 0.28]';
 % S = stop motion
 
 mission.actions.go_to.tasks = ["JL", "MA", "T"];
-mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "CM"];
+mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "T"];
 mission.actions.end_motion.tasks = ["MA", "S"];
 
 mission.phase = 1;
@@ -147,7 +147,6 @@ for t = 0:dt:Tf
         tool_jacobian_R = pandaArm.ArmR.wJo;
     end
 
-
     % add all the other tasks here!
     % the sequence of iCAT_task calls defines the priority
  
@@ -186,24 +185,6 @@ for t = 0:dt:Tf
     % Right Arm
     J = [zeros(6, 7), pandaArm.ArmR.wJt];
     [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.tool, J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
-
-    % COOPERATIVE MANIPULATION TASK
-    % Left Arm
-    J = [pandaArm.ArmL.wJo, zeros(6,7)];
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.target , J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
-
-    % Right Arm
-    J = [zeros(6,7), pandaArm.ArmR.wJo];
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.target, J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
-
-    % STOP TASK
-    % Left arm
-    J = [pandaArm.ArmL.wJo, zeros(6,7)];
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.stop, J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
-
-    % Right Arm
-    J = [zeros(6,7), pandaArm.ArmR.wJo];
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.stop, J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
 
     % LAST TASK
     [Qp, ydotbar] = iCAT_task(eye(14), eye(14), Qp, ydotbar, zeros(14,1),  ...
@@ -257,12 +238,9 @@ for t = 0:dt:Tf
             % disp (pandaArm.ArmL.A.ma);
             % disp(pandaArm.ArmR.A.ma);
 
-            disp(pandaArm.ArmL.A.tool);
-            disp(pandaArm.ArmR.A.tool);
-
-            disp(pandaArm.ArmL.A.target);
-            disp(pandaArm.ArmR.A.target);
-            
+            % disp(pandaArm.ArmL.A.tool);
+            % disp(pandaArm.ArmR.A.tool);
+        
         elseif (mission.phase == 2)
             %add debug prints phase 2 here
 
@@ -274,11 +252,11 @@ for t = 0:dt:Tf
             % disp (pandaArm.ArmL.A.ma);
             % disp(pandaArm.ArmR.A.ma);
 
-            disp(pandaArm.ArmL.A.tool);
-            disp(pandaArm.ArmR.A.tool);
+            % disp(pandaArm.ArmL.A.tool);
+            % disp(pandaArm.ArmR.A.tool);
+            
+    
 
-            disp(pandaArm.ArmL.A.target);
-            disp(pandaArm.ArmR.A.target);
 
         elseif (mission.phase == 3)
             %add debug prints phase 2 here
@@ -289,9 +267,7 @@ for t = 0:dt:Tf
             % 
             % disp(pandaArm.ArmL.A.tool);
             % disp(pandaArm.ArmR.A.tool);
-            % 
-            % disp(pandaArm.ArmL.A.target); 
-            % disp(pandaArm.ArmR.A.target);    
+           
         end
     end
     
