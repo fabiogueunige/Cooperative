@@ -7,7 +7,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     gain_jl = 0.3;
     gain_alt = 0.3;
     gain_tool = 0.4;
-    gain_obj = 0.6;
+    gain_obj = 0.3;
     delta = 0.05;
     min_alt = 0.15; % guarda se vanno definiti fuori
     

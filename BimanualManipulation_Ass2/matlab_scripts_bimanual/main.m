@@ -98,11 +98,6 @@ mission.phase_time = 0;
 mission.prev_action = mission.actions.go_to.tasks; % variable updated in UpdateMissionPhase.m
 mission.current_action = mission.actions.go_to.tasks;
 
-% array for print
-activation_func_plot = [];
-x_des = [];
-i = 1;
-
 %% CONTROL LOOP
 disp('STARTED THE SIMULATION');
 for t = 0:dt:Tf
@@ -245,31 +240,58 @@ for t = 0:dt:Tf
     % Update data plot
     plt = UpdateDataPlot(plt,pandaArm,t,loop, mission);
     loop = loop + 1;
+  
     % add debug prints here
     if (mod(t,0.1) == 0)
         t;
         phase = mission.phase
-        time = mission.phase_time
-        if (mission.phase == 1)
-
+        time = mission.phase_time;
+       if (mission.phase == 1)
             %add debug prints phase 1 here
-            %mission.prev_action
-            %disp(pandaArm.ArmL.A.tool);
-            %disp(pandaArm.ArmR.A.tool);
+
+            %disp(pandaArm.A.rc); %ok
+
+            % disp(pandaArm.ArmL.A.jl);
+            % disp(pandaArm.ArmR.A.jl);
+        
+            % disp (pandaArm.ArmL.A.ma);
+            % disp(pandaArm.ArmR.A.ma);
+
+            disp(pandaArm.ArmL.A.tool);
+            disp(pandaArm.ArmR.A.tool);
+
+            disp(pandaArm.ArmL.A.target);
+            disp(pandaArm.ArmR.A.target);
             
         elseif (mission.phase == 2)
-
             %add debug prints phase 2 here
-            %disp(pandaArm.ArmL.A.tool);
-            %disp(pandaArm.ArmR.A.tool);
-            %disp(pandaArm.A.rc)
-            %disp(pandaArm.ArmL.A.target);
+
+            % disp(pandaArm.A.rc); %ok
+            % 
+            % disp(pandaArm.ArmL.A.jl);
+            % disp(pandaArm.ArmR.A.jl);
+            % 
+            % disp (pandaArm.ArmL.A.ma);
+            % disp(pandaArm.ArmR.A.ma);
+
+            disp(pandaArm.ArmL.A.tool);
+            disp(pandaArm.ArmR.A.tool);
+
+            disp(pandaArm.ArmL.A.target);
+            disp(pandaArm.ArmR.A.target);
 
         elseif (mission.phase == 3)
-
-            %disp(pandaArm.ArmL.A.tool);
-            %disp(pandaArm.ArmR.A.tool);
-            %disp(pandaArm.ArmL.A.target);            
+            %add debug prints phase 2 here
+            % disp(pandaArm.A.rc); %ok
+            % 
+            % disp(pandaArm.ArmL.A.jl);
+            % disp(pandaArm.ArmR.A.jl);
+            % 
+            % disp(pandaArm.ArmL.A.tool);
+            % disp(pandaArm.ArmR.A.tool);
+            % 
+            % disp(pandaArm.ArmL.A.target); 
+            % disp(pandaArm.ArmR.A.target);    
         end
     end
     
