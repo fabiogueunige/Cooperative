@@ -18,8 +18,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     % Create a velocity away from the limits => move to the middle between jlmax and jlmin
 
     % joint limits corresponding to the actual Panda by Franka arm configuration
-    pandaArm.ArmL.xdot.jl = gain_jl .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.ArmL.q);
-    pandaArm.ArmR.xdot.jl = gain_jl .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.ArmR.q);
+    pandaArm.ArmL.xdot.jl (1:7, 1) = gain_jl .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.ArmL.q);
+    pandaArm.ArmR.xdot.jl (8:14, 1) = gain_jl .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.ArmR.q);
     
     %% PROVA INTEGRATORE
     %persistent integrated_error_L;
@@ -40,13 +40,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % -----------------------------------------------------------------
             % Tool position and orientation task reference
             [ang, lin] = CartError(pandaArm.ArmL.wTg, pandaArm.ArmL.wTt); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
-            
-            % PROVA INTEGRATORE
-            %current_error_L = [ang; lin];  
-            %integrated_error_L = integrated_error_L + current_error_L * dt;
-
-            %pandaArm.ArmL.xdot.tool_I = gain_I; % * integrated_error_L;
-           
+                       
             pandaArm.ArmL.xdot.tool = gain_tool * [ang; lin]; %+ pandaArm.ArmL.xdot.tool_I;
 
             % limit the requested velocities...
@@ -59,6 +53,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             [ang, lin] = CartError(pandaArm.ArmR.wTg, pandaArm.ArmR.wTt);
            
             pandaArm.ArmR.xdot.tool = gain_tool * [ang; lin];
+
             % limit the requested velocities...
             pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
             pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
@@ -74,7 +69,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % J * ydot = xdot --> xdot = 0
             pandaArm.xdot.rc = zeros(6,1);
 
-            %pandaArm.xdot.rc = pandaArm.ArmL.wJo * pandaArm.ArmL.qdot + pandaArm.ArmR.wJo * pandaArm.ArmR.qdot; % Vo = J1*q1dot + J2*q2dot
+           
             
             % LEFT ARM
             % -----------------------------------------------------------------        

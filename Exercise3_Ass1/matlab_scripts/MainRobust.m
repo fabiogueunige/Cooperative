@@ -194,6 +194,6 @@ end
 fclose(uVehicle);
 fclose(uArm);
 
-%PrintPlot(plt);
+PrintPlot(plt);
 
 end

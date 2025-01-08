@@ -23,9 +23,61 @@ function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
     
 
     % Init relevance Jacobians
+
     pandaArm.ArmL.bJe = eye(6,7);
     pandaArm.ArmR.bJe = eye(6,7);
-    pandaArm.Jjl = [];
+
+    pandaArm.ArmL.wJt = eye(6,7);
+    pandaArm.ArmR.wJt = eye(6,7);
+
+    pandaArm.ArmL.wJo = eye(6,7);
+    pandaArm.ArmR.wJo = eye(6,7);
+
+    pandaArm.Jrc = zeros(6,14);
+
+    pandaArm.ArmL.Jma = zeros(6,14);
+    pandaArm.ArmR.Jma = zeros(6,14);
+
+    pandaArm.ArmL.Jjl = zeros(14);
+    pandaArm.ArmR.Jjl = zeros(14);
+
+    % Init activation functions
+
+    % rigid constraint 
+    pandaArm.A.rc = zeros(6);
+    % joints limit
+    pandaArm.ArmL.A.jl = zeros(14);
+    pandaArm.ArmR.A.jl = zeros(14);
+    % minimum altitude
+    pandaArm.ArmL.A.ma = zeros(6);
+    pandaArm.ArmR.A.ma = zeros(6);
+    % grasping task
+    pandaArm.ArmL.A.tool = eye(6);
+    pandaArm.ArmR.A.tool = eye(6);
+    % move_object
+    pandaArm.ArmL.A.target = zeros(6);
+    pandaArm.ArmR.A.target = zeros(6);
+    % stop 
+    pandaArm.ArmL.A.stop = zeros(6);
+    pandaArm.ArmR.A.stop = zeros(6);    
+
+    % Init xdot 
+    pandaArm.xdot.rc = zeros(6,1);
+
+    pandaArm.ArmL.xdot.alt = [];
+    pandaArm.ArmR.xdot.alt = [];
+
+    pandaArm.ArmL.xdot.jl = zeros(14,1);
+    pandaArm.ArmR.xdot.jl = zeros(14,1);
+
+    pandaArm.ArmL.xdot.tool = [];
+    pandaArm.ArmR.xdot.tool = [];
+
+   
+
+    
+    
+
 
 end
 

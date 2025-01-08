@@ -47,19 +47,17 @@ if (mission.phase == 2)
     %tTo calcolare in update mission phase andaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmL.wTo(1:3, 4))
     
     pandaArm.ArmL.wJo = pandaArm.ArmL.tSo * pandaArm.ArmL.wJt; 
-    % pandaArm.ArmR.tSo = [eye(3),                                                        zeros(3); 
-    %                      skew(pandaArm.ArmR.wTo(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4))'   eye(3)];
     pandaArm.ArmR.wJo = pandaArm.ArmR.tSo * pandaArm.ArmR.wJt;
+
+    pandaArm.Jrc = [pandaArm.ArmL.wJo, -pandaArm.ArmR.wJo];
+
 end
 %% Common Jacobians
 
 %minimum altitude
-pandaArm.ArmL.Jma = pandaArm.ArmL.wJt(6,:); % row vector containing only the z linear components
-pandaArm.ArmR.Jma = pandaArm.ArmR.wJt(6,:);
+pandaArm.ArmL.Jma(6,1:7) = pandaArm.ArmL.wJt(6,:); % row vector containing only the z linear components
+pandaArm.ArmR.Jma(6,8:14) = pandaArm.ArmR.wJt(6,:);
 
-% joint limits
-% consider only the z angular axis of the joint
-pandaArm.ArmL.Jjl = pandaArm.ArmL.wJt(3, :); % consider only the angular part of the jacobian
-pandaArm.ArmR.Jjl = pandaArm.ArmR.wJt(3, :); % consider only the angular part of the jacobian
+
 
 end
