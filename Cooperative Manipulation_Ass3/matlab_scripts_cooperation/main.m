@@ -96,6 +96,7 @@ mission.actions.end_motion.tasks = ["MA","S"];
 mission.error.lin = [];
 mission.error.ang = [];
 
+
 %% cooperative parameters initialization
 mu0 = 1;
 
@@ -133,6 +134,10 @@ for t = 0:deltat:end_time
     [pandaArm1] = ComputeTaskReferences(pandaArm1,mission);
     [pandaArm2] = ComputeTaskReferences(pandaArm2,mission);
 
+    % distance between tool of arm1 and tool of arm2 (plot)
+    pandaArm1.t1Dt2 = pandaArm2.wTt(1:3,4) - pandaArm1.wTt(1:3,4);
+    [ang, lin] = CartError(pandaArm2.wTt, pandaArm1.wTt);
+    pandaArm1.t1Dt2 = [lin;ang];
 
     % main kinematic algorithm initialization
     % ydotbar order is [qdot_1, qdot_2, ..., qdot_7, xdot, ydot, zdot, omega_x, omega_y, omega_z]
@@ -145,10 +150,10 @@ for t = 0:deltat:end_time
     ydotbar2 = zeros(7,1);
     Qp2 = eye(7);
     % cooperation
-    ydotbar_coop = zeros(7,1);
-    Qp_coop = eye(7);
-    ydotbar2_coop = zeros(7,1);
-    Qp2_coop = eye(7);
+    ydotbar_coop = ydotbar;
+    Qp_coop = Qp;
+    ydotbar2_coop = ydotbar2;
+    Qp2_coop = Qp2;
     
 
     % Used by the Move-To task
@@ -199,7 +204,7 @@ for t = 0:deltat:end_time
     end
     
 
-    if(mission.phase == 2)
+    if(mission.phase ==2)
 
         %% COOPERATION hierarchy
         % 1/ Compute task references
@@ -209,14 +214,22 @@ for t = 0:deltat:end_time
         % Task: Left Arm Cooperation
         [Qp, ydotbar] = iCAT_task(pandaArm1.A.target, pandaArm1.wJo, Qp, ydotbar, ...
                                   pandaArm1.xdot.tool, 0.0001,   0.01, 10);
-
+        actual_xdot = pandaArm1.wJo * ydotbar; % for plotting
+        pandaArm1.xdot.actual = actual_xdot; % for plotting
+        pandaArm1.xdot.desired = pandaArm1.xdot.tool; % for plotting
+        
         % Task: Right Arm Cooperation 
         [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.target, pandaArm2.wJo, Qp2, ydotbar2, ...
-                                    pandaArm2.xdot.tool, 0.0001,   0.01, 10);  
+                                    pandaArm2.xdot.tool, 0.0001,   0.01, 10);
+        actual_xdot = pandaArm2.wJo * ydotbar2; % for plotting
+        pandaArm2.xdot.actual = actual_xdot; % for plotting
    
         % 3/  compute the NON COOPERATIVE velocities (xdot)
         pandaArm1.xdot.nc.tool = pandaArm1.wJo * ydotbar;
         pandaArm2.xdot.nc.tool = pandaArm2.wJo * ydotbar2;
+
+        % v = pandaArm2.xdot.nc.tool - pandaArm2.xdot.tool;
+        % disp(v)
         
         % Compute the weights
         pandaArm1.m = mu0 + norm(pandaArm1.xdot.tool - pandaArm1.xdot.nc.tool);
@@ -224,7 +237,7 @@ for t = 0:deltat:end_time
         
         % 5/ Compute the COOPERATIVE velocities (xdot_cappello)
         pandaArm.xdot.c.tool = (1/(pandaArm1.m + pandaArm2.m) * (pandaArm1.m * pandaArm1.xdot.nc.tool + pandaArm2.m * pandaArm2.xdot.nc.tool));
-        
+      
         % 6/ each agent evaluate C
     
         % motion space single agent matrix for robot1
@@ -237,16 +250,11 @@ for t = 0:deltat:end_time
         
         % 7/ Compute FEASIBLE COOPERATIVE velocities (xdot_tilde)
         pandaArm.xdot.fc.tool = [pandaArm1.H,  zeros(6); zeros(6), pandaArm2.H] * (eye(12) - (pinv(C) * C)) * [pandaArm.xdot.c.tool; pandaArm.xdot.c.tool];
-        
+        pandaArm1.xdot.fc.tool = pandaArm.xdot.fc.tool; % storing for plotting
+
         % 8/ Each agent runs new TPIK, where now the ee velocities tracking
         % task is at the top of hierarchy
-
-        % cooperation
-        ydotbar_coop = zeros(7,1);
-        Qp_coop = eye(7);
-        ydotbar2_coop = zeros(7,1);
-        Qp2_coop = eye(7);
-
+    
         % Task: Arms Cooperation
         % left arm
         [Qp_coop, ydotbar_coop] = iCAT_task(pandaArm1.A.target, pandaArm1.wJo, Qp_coop, ydotbar_coop, ...
@@ -263,11 +271,11 @@ for t = 0:deltat:end_time
         % arm2 (right)
         [Qp2_coop, ydotbar2_coop] = iCAT_task(pandaArm2.A.jl, pandaArm2.J.jl, Qp2_coop, ydotbar2_coop, ...
                                       pandaArm2.xdot.jl, 0.0001,   0.01, 10);   
-    
+
         % Minimum distance from table cooperative
         [Qp_coop, ydotbar_coop]  = iCAT_task(pandaArm1.A.ma, pandaArm1.J.ma, Qp_coop, ydotbar_coop, ...
                                   pandaArm1.xdot.alt, 0.0001,   0.01, 10);  
-    
+
         % arm2 (right)
         [Qp2_coop, ydotbar2_coop] = iCAT_task(pandaArm2.A.ma, pandaArm2.J.ma, Qp2_coop, ydotbar2_coop,...
                                   pandaArm2.xdot.alt, 0.0001,   0.01, 10);    
@@ -286,18 +294,18 @@ for t = 0:deltat:end_time
     end
 
 
-    % [Qp_coop, ydotbar] = iCAT_task(eye(7),...
-    %     eye(7),....
-    %     Qp, ydotbar,...
-    %     zeros(7,1),...
-    %     0.0001,   0.01, 10);    
-    % 
-    % % this task should be the last one
-    % [Qp2, ydotbar2] = iCAT_task(eye(7),...
-    %     eye(7),....
-    %     Qp2, ydotbar2,...
-    %     zeros(7,1),...
-    %     0.0001,   0.01, 10);    
+    [Qp, ydotbar] = iCAT_task(eye(7),...
+        eye(7),....
+        Qp, ydotbar,...
+        zeros(7,1),...
+        0.0001,   0.01, 10);    
+
+    % this task should be the last one
+    [Qp2, ydotbar2] = iCAT_task(eye(7),...
+        eye(7),....
+        Qp2, ydotbar2,...
+        zeros(7,1),...
+        0.0001,   0.01, 10);    
 
 
     % get the two variables for integration
@@ -305,11 +313,10 @@ for t = 0:deltat:end_time
         pandaArm1.q_dot = ydotbar(1:7);
         pandaArm2.q_dot = ydotbar2(1:7);
     elseif mission.phase == 2
-        pandaArm1.qdot = ydotbar_coop(1:7);
-        disp(pandaArm1.qdot)
+        pandaArm1.q_dot = ydotbar_coop(1:7);
         pandaArm2.q_dot = ydotbar2_coop(1:7);
     end
-    
+
     pandaArm1.x = tool_jacobian_L * pandaArm1.q_dot;
     pandaArm2.x = tool_jacobian_R * pandaArm2.q_dot;
     
@@ -326,8 +333,9 @@ for t = 0:deltat:end_time
     if real_robot == true
         step(hudpsLeft,[t;pandaArm1.q_dot]);
         step(hudpsRight,[t;pandaArm2.q_dot]);
-    else 
-        step(hudps,[pandaArm1.q',pandaArm2.q'])
+    else
+            step(hudps,[pandaArm1.q',pandaArm2.q']);
+
     end
 
     % check if the mission phase should be changed
@@ -343,7 +351,7 @@ for t = 0:deltat:end_time
     loop = loop + 1;
     % add debug prints here
     if (mod(t,0.1) == 0)
-        t; 
+        t;
         mission.phase
     end
     

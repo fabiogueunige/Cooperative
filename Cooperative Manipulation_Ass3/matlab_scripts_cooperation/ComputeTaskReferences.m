@@ -24,11 +24,10 @@ switch mission.phase
         pandaArm.xdot.tool(4:6) = Saturate(pandaArm.xdot.tool(4:6,:),2);    
     case 2
         % Rigid Grasp Constraint
-        pandaArm.xdot.rc = zeros(6,1);
+        % pandaArm.xdot.rc = zeros(6,1);
         
         % Object position and orientation task reference
         [ang, lin] = CartError(pandaArm.wTog, pandaArm.wTo);
-        disp(lin);
         pandaArm.xdot.tool = gain * [ang;lin];
         % Limits request velocities
         pandaArm.xdot.tool(1:3) = Saturate(pandaArm.xdot.tool(1:3,:), 2);

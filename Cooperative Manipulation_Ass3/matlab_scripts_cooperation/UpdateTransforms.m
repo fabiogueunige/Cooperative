@@ -12,7 +12,7 @@ pandaArm.wTt = pandaArm.wTe * pandaArm.eTt;
 
 % <o> to <w> : ASSUME <t> = <g> during entire cooperation phase
 if (mission.phase == 2)
-    %!!!!! compute in phase 2 tTo 
+    % compute in phase 2 tTo 
     pandaArm.wTo = pandaArm.wTt * pandaArm.tTo;
 end
 

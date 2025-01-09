@@ -24,7 +24,16 @@ pandaArm.Jjl = [];
 %% ... TO HERE
 % Init Task Reference vectors
 
+
 % Init Activation function for activate or deactivate tasks
+
+
+% Init variables for plotting
+pandaArm.xdot.actual = 0;
+pandaArm.xdot.desired = 0;
+pandaArm.t2 = NaN; % time phase 2
+pandaArm.t3 = NaN; % time phase 3
+pandaArm.xdot.fc.tool = 0;
 
 end
 
