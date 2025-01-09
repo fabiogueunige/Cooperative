@@ -20,6 +20,8 @@ function [pandaArm, pandaArm2, mission] = UpdateMissionPhase(pandaArm, pandaArm2
                     % distance from tool to object ompute at grasping point (to avoid numerical errors)
                     pandaArm.tDo = pandaArm.wTt(1:3,4) - pandaArm.wTo(1:3,4);
                     pandaArm2.tDo = pandaArm2.wTt(1:3,4) - pandaArm2.wTo(1:3,4);
+                    mission.prev_action = mission.current_action;
+                    mission.act_action = mission.actions.coop_manip.tasks;
                  
                 end
                 
@@ -32,6 +34,8 @@ function [pandaArm, pandaArm2, mission] = UpdateMissionPhase(pandaArm, pandaArm2
                     mission.phase = 3;
                     pandaArm.t3 = mission.phase_time; % storing the time at which we change phase (plot)
                     mission.phase_time = 0;
+                    mission.prev_action = mission.current_action;
+                    mission.act_action = mission.actions.end_motion.tasks;
                 end
             case 3 % Finish motion
                 

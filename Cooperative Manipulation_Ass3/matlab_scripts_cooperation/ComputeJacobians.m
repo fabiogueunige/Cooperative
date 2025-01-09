@@ -44,7 +44,6 @@ pandaArm.J.jl = eye(7);
 
 %% Minimum altitude jacobian
 % consider only the velocity on z linear axis 
-pandaArm.J.ma = zeros(6, 7);
 pandaArm.J.ma(6, :) = pandaArm.wJt(6,:);
 
 end

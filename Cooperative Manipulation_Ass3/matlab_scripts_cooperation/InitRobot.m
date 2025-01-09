@@ -20,13 +20,18 @@ pandaArm.jlmax = [2.8973; 1.7628; 2.8973; -0.0698; 2.8973; 3.7525; 2.8973];
 % Init relevance Jacobians
 pandaArm.bJe = eye(6,7);
 pandaArm.Jjl = [];
+pandaArm.wJo = zeros(6,7);
+pandaArm.J.ma = zeros(6, 7);
 
 %% ... TO HERE
 % Init Task Reference vectors
-
-
+pandaArm.xdot.tool = zeros(6,1);
+pandaArm.xdot.alt = [];
+pandaArm.xdot.jl = [];
 % Init Activation function for activate or deactivate tasks
-
+pandaArm.A.tool = zeros(6);
+pandaArm.A.ma = zeros(6,6);
+pandaArm.A.jl = zeros(7);
 
 % Init variables for plotting
 pandaArm.xdot.actual = 0;

@@ -77,20 +77,19 @@ pandaArm2.wTog(1:3,4) = w_obj_g;
 
 %% Mission configuration
 
-mission.prev_action = "go_to";
-mission.current_action = "go_to";
-
 mission.phase = 1;
 mission.phase_time = 0;
 % Define the active tasks for each phase of the mission
 % T = move tool task
 % JL = joint limits task
 % MA = minimum altitude task
-% RC = rigid constraint task
-% TC = tool constraint
+
 mission.actions.go_to.tasks = ["JL","MA","T"];
-mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "TC"];
-mission.actions.end_motion.tasks = ["MA","S"];
+mission.actions.coop_manip.tasks = ["JL", "MA", "T"];
+mission.actions.end_motion.tasks = ["MA","T"];
+
+mission.prev_action = mission.actions.go_to.tasks;
+mission.current_action = mission.actions.go_to.tasks;
 
 % debug code
 mission.error.lin = [];
@@ -98,7 +97,7 @@ mission.error.ang = [];
 
 
 %% cooperative parameters initialization
-mu0 = 1;
+mu0 = 0.2;
 
 %% CONTROL LOOP
 for t = 0:deltat:end_time
@@ -181,7 +180,7 @@ for t = 0:deltat:end_time
     [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.jl, pandaArm2.J.jl, Qp2, ydotbar2, ...
                               pandaArm2.xdot.jl, 0.0001,   0.01, 10);   
 
-    % Minimum distance from table
+    % Minimum altitude from table
     % arm1 (left)
     [Qp, ydotbar] = iCAT_task(pandaArm1.A.ma, pandaArm1.J.ma, Qp, ydotbar, ...
                               pandaArm1.xdot.alt, 0.0001,   0.01, 10);  
@@ -191,39 +190,32 @@ for t = 0:deltat:end_time
                               pandaArm2.xdot.alt, 0.0001,   0.01, 10);    
 
     % the sequence of iCAT_task calls defines the priority
-    if mission.phase == 1
-        % First Manipulator TPIK (left)
-        % Task: Tool Move-To
-        [Qp, ydotbar] = iCAT_task(pandaArm1.A.tool, pandaArm1.wJt, Qp, ydotbar, ...
-                                  pandaArm1.xdot.tool, 0.0001,   0.01, 10);    
     
-        % Second manipulator TPIK (right)
-        % Task: Tool Move-To
-        [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.tool, pandaArm2.wJt, Qp2, ydotbar2, ...
-                                    pandaArm2.xdot.tool, 0.0001,   0.01, 10);  
-    end
+    % First Manipulator TPIK (left)
+    % Task: Tool Move-To
+    [Qp, ydotbar] = iCAT_task(pandaArm1.A.tool, pandaArm1.wJt, Qp, ydotbar, ...
+                              pandaArm1.xdot.tool, 0.0001,   0.01, 10);    
+
+    % Second manipulator TPIK (right)
+    % Task: Tool Move-To
+    [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.tool, pandaArm2.wJt, Qp2, ydotbar2, ...
+                                pandaArm2.xdot.tool, 0.0001,   0.01, 10);  
     
 
-    if(mission.phase ==2)
 
-        %% COOPERATION hierarchy
-        % 1/ Compute task references
+    %% COOPERATION hierarchy
+    if(mission.phase == 2)
+    % 1/ Compute task references
+
+    % 2/ Each agent run TPIK hierarchy (NOT COOPERATIVE)
     
-        % 2/ Each agent run TPIK hierarchy (NOT COOPERATIVE)
-    
-        % Task: Left Arm Cooperation
-        [Qp, ydotbar] = iCAT_task(pandaArm1.A.target, pandaArm1.wJo, Qp, ydotbar, ...
-                                  pandaArm1.xdot.tool, 0.0001,   0.01, 10);
         actual_xdot = pandaArm1.wJo * ydotbar; % for plotting
         pandaArm1.xdot.actual = actual_xdot; % for plotting
         pandaArm1.xdot.desired = pandaArm1.xdot.tool; % for plotting
         
-        % Task: Right Arm Cooperation 
-        [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.target, pandaArm2.wJo, Qp2, ydotbar2, ...
-                                    pandaArm2.xdot.tool, 0.0001,   0.01, 10);
         actual_xdot = pandaArm2.wJo * ydotbar2; % for plotting
         pandaArm2.xdot.actual = actual_xdot; % for plotting
-   
+       
         % 3/  compute the NON COOPERATIVE velocities (xdot)
         pandaArm1.xdot.nc.tool = pandaArm1.wJo * ydotbar;
         pandaArm2.xdot.nc.tool = pandaArm2.wJo * ydotbar2;
@@ -236,7 +228,7 @@ for t = 0:deltat:end_time
         pandaArm2.m = mu0 + norm(pandaArm2.xdot.tool - pandaArm2.xdot.nc.tool);
         
         % 5/ Compute the COOPERATIVE velocities (xdot_cappello)
-        pandaArm.xdot.c.tool = (1/(pandaArm1.m + pandaArm2.m) * (pandaArm1.m * pandaArm1.xdot.nc.tool + pandaArm2.m * pandaArm2.xdot.nc.tool));
+        pandaArm.xdot.c.tool = ((pandaArm1.m * pandaArm1.xdot.nc.tool + pandaArm2.m * pandaArm2.xdot.nc.tool) / (pandaArm1.m + pandaArm2.m));
       
         % 6/ each agent evaluate C
     
@@ -254,14 +246,14 @@ for t = 0:deltat:end_time
 
         % 8/ Each agent runs new TPIK, where now the ee velocities tracking
         % task is at the top of hierarchy
-    
+    py
         % Task: Arms Cooperation
         % left arm
-        [Qp_coop, ydotbar_coop] = iCAT_task(pandaArm1.A.target, pandaArm1.wJo, Qp_coop, ydotbar_coop, ...
+        [Qp_coop, ydotbar_coop] = iCAT_task(pandaArm1.A.tool, pandaArm1.wJo, Qp_coop, ydotbar_coop, ...
                                   pandaArm.xdot.fc.tool(1:6), 0.0001,   0.01, 10);
 
         % % Task: Right Arm Cooperation 
-        [Qp2_coop, ydotbar2_coop] = iCAT_task(pandaArm2.A.target, pandaArm2.wJo, Qp2_coop, ydotbar2_coop, ...
+        [Qp2_coop, ydotbar2_coop] = iCAT_task(pandaArm2.A.tool, pandaArm2.wJo, Qp2_coop, ydotbar2_coop, ...
                                     pandaArm.xdot.fc.tool(7:12), 0.0001,   0.01, 10);                                    
                                                                 
         % Joints limit cooperative
@@ -278,20 +270,18 @@ for t = 0:deltat:end_time
 
         % arm2 (right)
         [Qp2_coop, ydotbar2_coop] = iCAT_task(pandaArm2.A.ma, pandaArm2.J.ma, Qp2_coop, ydotbar2_coop,...
-                                  pandaArm2.xdot.alt, 0.0001,   0.01, 10);    
-
-       
+                                  pandaArm2.xdot.alt, 0.0001,   0.01, 10);      
     end
 
-    if mission.phase == 3
-         [Qp, ydotbar] = iCAT_task( pandaArm1.A.stop, pandaArm1.wJo, Qp, ydotbar, ...
-                                    pandaArm1.xdot.tool, 0.0001,   0.01, 10);    
+    %% Stop action
+    [Qp, ydotbar] = iCAT_task(pandaArm1.A.tool, pandaArm1.wJo, Qp, ydotbar, ...
+                        pandaArm1.xdot.tool, 0.0001,   0.01, 10);    
     
-                  
-        [Qp2, ydotbar2] = iCAT_task( pandaArm2.A.stop, pandaArm2.wJo,  Qp2, ydotbar2,  ...
-                                     pandaArm2.xdot.tool, 0.0001,   0.01, 10);             
       
-    end
+    [Qp2, ydotbar2] = iCAT_task(pandaArm2.A.tool, pandaArm2.wJo,  Qp2, ydotbar2,  ...
+                         pandaArm2.xdot.tool, 0.0001,   0.01, 10);             
+      
+
 
 
     [Qp, ydotbar] = iCAT_task(eye(7),...
