@@ -38,6 +38,9 @@ pandaArm.ArmR.eSt = [eye(3) zeros(3,3); (skew(pandaArm.ArmR.wTe(1:3,1:3) * panda
 pandaArm.ArmL.wJt = pandaArm.ArmL.eSt * [pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmL.wTb(1:3,1:3)] * pandaArm.ArmL.bJe;
 pandaArm.ArmR.wJt = pandaArm.ArmR.eSt * [pandaArm.ArmR.wTb(1:3,1:3) zeros(3,3); zeros(3,3) pandaArm.ArmR.wTb(1:3,1:3)] * pandaArm.ArmR.bJe;
 
+pandaArm.ArmL.J = [pandaArm.ArmL.wJt, zeros(6,7)];
+pandaArm.ArmR.J = [zeros(6, 7), pandaArm.ArmR.wJt];
+
 if (mission.phase == 2)
     % tSo rigid jacobian between the robot and the obj 
     % needed distance fro tool to obj projected on world
@@ -48,6 +51,9 @@ if (mission.phase == 2)
     
     pandaArm.ArmL.wJo = pandaArm.ArmL.tSo * pandaArm.ArmL.wJt; 
     pandaArm.ArmR.wJo = pandaArm.ArmR.tSo * pandaArm.ArmR.wJt;
+
+    pandaArm.ArmL.J = [pandaArm.ArmL.wJo, zeros(6,7)];
+    pandaArm.ArmR.J = [zeros(6, 7), pandaArm.ArmR.wJo];
 
     pandaArm.Jrc = [pandaArm.ArmL.wJo, -pandaArm.ArmR.wJo];
 

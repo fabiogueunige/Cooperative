@@ -8,7 +8,7 @@ real_robot = false;
 %% Initialization - DON'T CHANGE ANYTHING from HERE ... 
 % Simulation variables (integration and final time)
 dt = 0.005;
-Tf = 20; %simulation time
+Tf = 15; %simulation time
 loop = 1;
 maxloops = ceil(Tf/dt);
 mission.phase = 1;
@@ -91,7 +91,7 @@ pandaArm.wTog(1:3, 4) = [0.65, -0.35, 0.28]';
 
 mission.actions.go_to.tasks = ["JL", "MA", "T"];
 mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "T"];
-mission.actions.end_motion.tasks = ["MA", "S"];
+mission.actions.end_motion.tasks = ["MA", "T"];
 
 mission.phase = 1;
 mission.phase_time = 0;
@@ -149,8 +149,7 @@ for t = 0:dt:Tf
 
     % add all the other tasks here!
     % the sequence of iCAT_task calls defines the priority
- 
-    %% INitialization adn Parameters
+    %% Initialization and Parameters
     ydotbar = zeros(14, 1);
     Qp = eye(14);
     lambda = 0.0001;
@@ -169,7 +168,7 @@ for t = 0:dt:Tf
     [Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.jl, pandaArm.ArmL.Jjl, Qp, ydotbar, pandaArm.ArmL.xdot.jl, lambda, threshold, weight);
     % right arm
     [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.jl, pandaArm.ArmR.Jjl, Qp, ydotbar, pandaArm.ArmR.xdot.jl, lambda, threshold, weight);
-    
+   
     % MINIMUM ALTITUDE TASK
     % we have two task of dimension 6, we consider here the all robot dof.
     % left arm
@@ -177,20 +176,17 @@ for t = 0:dt:Tf
     % right arm
     [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.ma, pandaArm.ArmR.Jma, Qp, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
 
-    % GRASPING TASK
-    % Left Arm
-    %12 row, 6 ang vel, 6 lin vel 
-    J = [pandaArm.ArmL.wJt, zeros(6,7)];
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.tool, J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
+    % MOVE TASK
+    % Left Arm 
+    [Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.tool, pandaArm.ArmL.J, Qp, ydotbar, pandaArm.ArmL.xdot.tool, lambda, threshold, weight);
+    
     % Right Arm
-    J = [zeros(6, 7), pandaArm.ArmR.wJt];
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.tool, J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
-
+    [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.tool, pandaArm.ArmR.J, Qp, ydotbar, pandaArm.ArmR.xdot.tool, lambda, threshold, weight);
+    
     % LAST TASK
     [Qp, ydotbar] = iCAT_task(eye(14), eye(14), Qp, ydotbar, zeros(14,1),  ...
-                                0.0001,   0.01, 10);   
-
-    % this task should be the last one
+                                0.0001,   0.01, 10);
+   
     % get the two variables for integration
     pandaArm.ArmL.q_dot = ydotbar(1:7);
     pandaArm.ArmR.q_dot = ydotbar(8:14);
@@ -232,39 +228,37 @@ for t = 0:dt:Tf
 
             %disp(pandaArm.A.rc); %ok
 
-            % disp(pandaArm.ArmL.A.jl);
-            % disp(pandaArm.ArmR.A.jl);
+            disp(pandaArm.ArmL.A.jl);
+            %disp(pandaArm.ArmR.A.jl);
         
-            % disp (pandaArm.ArmL.A.ma);
-            % disp(pandaArm.ArmR.A.ma);
-
-            % disp(pandaArm.ArmL.A.tool);
-            % disp(pandaArm.ArmR.A.tool);
-        
-        elseif (mission.phase == 2)
-            %add debug prints phase 2 here
-
-            % disp(pandaArm.A.rc); %ok
-            % 
-            % disp(pandaArm.ArmL.A.jl);
-            % disp(pandaArm.ArmR.A.jl);
-            % 
             % disp (pandaArm.ArmL.A.ma);
             % disp(pandaArm.ArmR.A.ma);
 
             % disp(pandaArm.ArmL.A.tool);
             % disp(pandaArm.ArmR.A.tool);
             
-    
-
-
-        elseif (mission.phase == 3)
+        elseif (mission.phase == 2)
             %add debug prints phase 2 here
+
             % disp(pandaArm.A.rc); %ok
-            % 
+            
             % disp(pandaArm.ArmL.A.jl);
             % disp(pandaArm.ArmR.A.jl);
-            % 
+            
+            % disp (pandaArm.ArmL.A.ma);
+            % disp(pandaArm.ArmR.A.ma);
+
+            % disp(pandaArm.ArmL.A.tool);
+            % disp(pandaArm.ArmR.A.tool);
+             
+        elseif (mission.phase == 3)
+            %add debug prints phase 2 here
+
+            % disp(pandaArm.A.rc); %ok
+            
+            % disp(pandaArm.ArmL.A.jl);
+            % disp(pandaArm.ArmR.A.jl);
+            
             % disp(pandaArm.ArmL.A.tool);
             % disp(pandaArm.ArmR.A.tool);
            

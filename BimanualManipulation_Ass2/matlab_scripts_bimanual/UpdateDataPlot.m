@@ -7,7 +7,6 @@ function [ plt ] = UpdateDataPlot( plt, pandaArm, t, loop, mission )
 % you can add whatever sampling you need to do additional plots
 % plots are done in the PrintPlot.m script
 
-
 plt.t(:, loop) = t;
 plt.q(:, loop) = pandaArm.ArmL.q;
 plt.q_dot(:, loop) = pandaArm.ArmL.q_dot;
@@ -19,13 +18,10 @@ plt.q_dot2(:, loop) = pandaArm.ArmR.q_dot;
 
 % Plot: desired object velocity
 
+
 %End effector velocities (Left Arm)
 
-
 %End effector velocities (Right Arm)
-
-
-% Plot: manipulability task activation function
 
 
 end
