@@ -3,7 +3,7 @@ addpath('./simulation_scripts');
 clc;
 clear;
 close all
-real_robot = false;
+real_robot = true;
 
 %% Initialization - DON'T CHANGE ANYTHING from HERE ... 
 % Simulation variables (integration and final time)

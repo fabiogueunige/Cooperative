@@ -1,6 +1,6 @@
 function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
 
-gain = 0.5;
+gain = 0.6;
 min_alt = 0.15;
 delta = 0.05;
 
@@ -20,8 +20,8 @@ switch mission.phase
 
         pandaArm.xdot.tool = gain * [ang; lin];
         % Limits request velocities
-        pandaArm.xdot.tool(1:3) = Saturate(pandaArm.xdot.tool(1:3,:),2);
-        pandaArm.xdot.tool(4:6) = Saturate(pandaArm.xdot.tool(4:6,:),2);    
+        pandaArm.xdot.tool(1:3) = Saturate(pandaArm.xdot.tool(1:3,:),0.2);
+        pandaArm.xdot.tool(4:6) = Saturate(pandaArm.xdot.tool(4:6,:),0.2);    
     case 2
         % Rigid Grasp Constraint
         % pandaArm.xdot.rc = zeros(6,1);
@@ -30,8 +30,8 @@ switch mission.phase
         [ang, lin] = CartError(pandaArm.wTog, pandaArm.wTo);
         pandaArm.xdot.tool = gain * [ang;lin];
         % Limits request velocities
-        pandaArm.xdot.tool(1:3) = Saturate(pandaArm.xdot.tool(1:3,:), 2);
-        pandaArm.xdot.tool(4:6) = Saturate(pandaArm.xdot.tool(4:6,:), 2);
+        pandaArm.xdot.tool(1:3) = Saturate(pandaArm.xdot.tool(1:3,:), 0.2);
+        pandaArm.xdot.tool(4:6) = Saturate(pandaArm.xdot.tool(4:6,:), 0.2);
 
     case 3
         % Stop any motions

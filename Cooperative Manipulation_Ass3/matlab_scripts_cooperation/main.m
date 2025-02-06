@@ -6,7 +6,7 @@ real_robot = false;
 %% Initialization - DON'T CHANGE ANYTHING from HERE ... 
 % Simulation variables (integration and final time)
 deltat = 0.005;
-end_time = 15;
+end_time = 35;
 loop = 1;
 maxloops = ceil(end_time/deltat);
 mission.phase = 1;
@@ -69,7 +69,7 @@ pandaArm2.wTg(1:3,1:3) = pandaArm2.wTt(1:3,1:3) * rotation(0, deg2rad(20), 0);
 pandaArm2.wTg(1:3,4) = [w_obj_pos(1) + (obj_length/2); w_obj_pos(2); w_obj_pos(3)];
 
 % Second goal move the object
-w_obj_g = [0.60; 0.40; 0.48]'; % object goal position
+w_obj_g = [0.60; -0.40; 0.48]'; % object goal position
 pandaArm1.wTog = eye(4);
 pandaArm1.wTog(1:3,4) = w_obj_g;
 pandaArm2.wTog = eye(4);
@@ -246,7 +246,7 @@ for t = 0:deltat:end_time
 
         % 8/ Each agent runs new TPIK, where now the ee velocities tracking
         % task is at the top of hierarchy
-    py
+
         % Task: Arms Cooperation
         % left arm
         [Qp_coop, ydotbar_coop] = iCAT_task(pandaArm1.A.tool, pandaArm1.wJo, Qp_coop, ydotbar_coop, ...

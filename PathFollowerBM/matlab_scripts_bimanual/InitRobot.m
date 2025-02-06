@@ -72,5 +72,22 @@ function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
 
     pandaArm.ArmL.xdot.tool = [];
     pandaArm.ArmR.xdot.tool = [];
+
+    % Define goals
+    
+    pandaArm.goal.wTog = eye(4);
+    pandaArm.goal.wTog(1:3, 4, 1) = [0.70, -0.35, 0.50]';
+
+    pandaArm.goal.wTog(1:4,1:4,2) = eye(4);
+    pandaArm.goal.wTog(1:3, 4, 2) = [0.70, -0.35, 0.20]';
+
+    pandaArm.goal.wTog(1:4,1:4,3) = eye(4);
+    pandaArm.goal.wTog(1:3, 4, 3) = [0.30, -0.35, 0.20]';
+    
+    pandaArm.goal.wTog(1:4,1:4,4) = eye(4);
+    pandaArm.goal.wTog(1:3, 4, 4) = [0.30, -0.35, 0.50]';
+
+    pandaArm.goal.counter = 0;
+
 end
 

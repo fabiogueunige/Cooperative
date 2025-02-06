@@ -6,8 +6,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
     gain = 0.6; % our choice (constant)
     gain_jl = 0.3;
     gain_alt = 0.3;
-    gain_tool = 0.4;
-    gain_obj = 0.3;
+    gain_tool = 0.6;
+    gain_obj = 0.5;
     delta = 0.05;
     min_alt = 0.15; % guarda se vanno definiti fuori
     
@@ -71,9 +71,11 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
 
             
             % LEFT ARM
-            % -----------------------------------------------------------------        
+            % -----------------------------------------------------------------  
+            % Compute the loss point
+           
             % Object position and orientation task reference
-            [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmL.wTo); 
+            [ang, lin] = CartError (pandaArm.goal.los, pandaArm.ArmL.wTo); 
             pandaArm.ArmL.xdot.tool = gain_obj * [ang; lin];
 
             % limit the requested velocities...
@@ -83,7 +85,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % RIGHT ARM
             % -----------------------------------------------------------------
             % Object position and orientation task reference
-            [ang, lin] = CartError(pandaArm.wTog, pandaArm.ArmR.wTo);
+            [ang, lin] = CartError (pandaArm.goal.los, pandaArm.ArmR.wTo);
             pandaArm.ArmR.xdot.tool = gain_obj * [ang; lin];
 
             % limit the requested velocities...

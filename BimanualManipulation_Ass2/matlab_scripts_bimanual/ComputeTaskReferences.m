@@ -4,10 +4,10 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
 
     %% Compute minimum altitude reference ALWAYS = gain ((min_alt + delta) - altitude)
     gain = 0.6; % our choice (constant)
-    gain_jl = 0.3;
-    gain_alt = 0.3;
-    gain_tool = 0.4;
-    gain_obj = 0.3;
+    gain_jl = 0.2;
+    gain_alt = 0.2;
+    gain_tool = 0.2;
+    gain_obj = 0.2;
     delta = 0.05;
     min_alt = 0.15; % guarda se vanno definiti fuori
     
@@ -44,8 +44,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             pandaArm.ArmL.xdot.tool = gain_tool * [ang; lin]; %+ pandaArm.ArmL.xdot.tool_I;
 
             % limit the requested velocities...
-            pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
-            pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
+            pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 0.2);
+            pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 0.2);
     
             % RIGHT ARM
             % -----------------------------------------------------------------
@@ -55,8 +55,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             pandaArm.ArmR.xdot.tool = gain_tool * [ang; lin];
 
             % limit the requested velocities...
-            pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
-            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
+            pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 0.2);
+            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 0.2);
             
         case 2 
             % Perform the rigid grasp of the object and move it
@@ -77,8 +77,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             pandaArm.ArmL.xdot.tool = gain_obj * [ang; lin];
 
             % limit the requested velocities...
-            pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
-            pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
+            pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 0.2);
+            pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 0.2);
     
             % RIGHT ARM
             % -----------------------------------------------------------------
@@ -87,8 +87,8 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             pandaArm.ArmR.xdot.tool = gain_obj * [ang; lin];
 
             % limit the requested velocities...
-            pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
-            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
+            pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 0.2);
+            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 0.2);
     
         case 3
              % Stop any motions

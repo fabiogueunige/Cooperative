@@ -72,5 +72,8 @@ function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
 
     pandaArm.ArmL.xdot.tool = [];
     pandaArm.ArmR.xdot.tool = [];
+    
+    % Init Goal
+    
 end
 

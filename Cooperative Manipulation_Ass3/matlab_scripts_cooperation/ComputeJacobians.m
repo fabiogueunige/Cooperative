@@ -32,7 +32,7 @@ if mission.phase == 2
     % (difference between the object frame w.r.t. tool frame
     %% todo project on world frame the distance
     % tDo computed in Update mission 
-    pandaArm.tSo = [eye(3) zeros(3,3); (skew(pandaArm.wTo(1:3,1:3) * pandaArm.tDo))' eye(3)];
+    pandaArm.tSo = [eye(3) zeros(3,3); -(skew(pandaArm.wTt(1:3,1:3) * pandaArm.tDo)) eye(3)];
     % multiply the rigid jacobian with te jacobian until the previous tool
     pandaArm.wJo = pandaArm.tSo * pandaArm.wJt;
 end

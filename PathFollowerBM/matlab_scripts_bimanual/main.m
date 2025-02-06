@@ -8,7 +8,7 @@ real_robot = false;
 %% Initialization - DON'T CHANGE ANYTHING from HERE ... 
 % Simulation variables (integration and final time)
 dt = 0.005;
-Tf = 15; %simulation time
+Tf = 60; %simulation time
 loop = 1;
 maxloops = ceil(Tf/dt);
 mission.phase = 1;
@@ -37,9 +37,10 @@ wTb_right (1:3,4) = [1.06; -0.01; 0];
 
 plt = InitDataPlot(maxloops);
 pandaArm = InitRobot(model, wTb_left, wTb_right);
-% Init object and tools frames
+
+%Init object and tools frames
 obj_length = 0.12;
-w_obj_pos = [0.3 0 0.59]';
+w_obj_pos = [0.5 0 0.50]';
 w_obj_ori = rotation(0,0,0);
 pandaArm.ArmL.wTo = [w_obj_ori w_obj_pos;
                        0 0 0 1];
@@ -61,8 +62,8 @@ pandaArm.ArmR.wTt = pandaArm.ArmR.wTe * pandaArm.ArmR.eTt;
 
 %% Defines the goal position for the end-effector/tool position task
 % First goal reach the grasping points.
-w_obj_g_left = [0.44 0 0.59]';
-w_obj_g_right = [0.56 0 0.59]';
+w_obj_g_left = [(w_obj_pos(1) - obj_length/2), w_obj_pos(2), w_obj_pos(3)]';
+w_obj_g_right = [(w_obj_pos(1) + obj_length/2), w_obj_pos(2), w_obj_pos(3)]';
 % the tool should rotate of 30 deg on y axis to reach goal orientation
 pandaArm.ArmL.wTg = eye(4);
 pandaArm.ArmL.wTg(1:3, 1:3) = pandaArm.ArmL.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
@@ -71,12 +72,6 @@ pandaArm.ArmL.wTg (1:3, 4) = w_obj_g_left;
 pandaArm.ArmR.wTg = eye(4);
 pandaArm.ArmR.wTg(1:3, 1:3) = pandaArm.ArmR.wTt(1:3, 1:3) * rotation(0, pi/6, 0);
 pandaArm.ArmR.wTg (1:3, 4) = w_obj_g_right;
-
-%% Second goal move the object
-pandaArm.wTog = eye(4);
-% probably check possible error, chek in case wtg intread wto, depending
-% the rotation of the tool
-pandaArm.wTog(1:3, 4) = [0.65, -0.35, 0.28]';
 
 %% Mission configuration
 
@@ -123,16 +118,16 @@ for t = 0:dt:Tf
     end
     
     if mission.phase == 1
-        A = w_obj_pos;
-        B = w_obj_pos + [0.3 0 0]';
+        %A = w_obj_pos;
+        %B = w_obj_pos + [0.3 0 0]';
     end
     
     %%
     % line passing through A and B: r = a + t*v
-    v = (B-A); % vector between A and B
-    T = ( ((v(1)*wTog(1,4)) + (v(2)*wTog(2,4)) + (v(3)*wTog(3,4))) - ((v(1)*A(1)) + (v(2)*A(2)) + (v(3)*A(3))) ) / (v(1)^2 + v(2)^2 + v(3)^2);
-    H = A + v * t; % intersection between plane and line
-    d = norm(wTog(1:3,4),H); % distance from object to line between A,B
+    %v = (B-A); % vector between A and B
+    %T = ( ((v(1)*wTog(1,4)) + (v(2)*wTog(2,4)) + (v(3)*wTog(3,4))) - ((v(1)*A(1)) + (v(2)*A(2)) + (v(3)*A(3))) ) / (v(1)^2 + v(2)^2 + v(3)^2);
+    %H = A + v * t; % intersection between plane and line
+    %d = norm(wTog(1:3,4),H); % distance from object to line between A,B
     
     %%
     % update all the involved variables
@@ -178,16 +173,16 @@ for t = 0:dt:Tf
     % in this case I am in space joint yet, so there isn't mapping beween
     % the real space and joint space, so the J is an Identity matrix
     % left arm
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.jl, pandaArm.ArmL.Jjl, Qp, ydotbar, pandaArm.ArmL.xdot.jl, lambda, threshold, weight);
+    %[Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.jl, pandaArm.ArmL.Jjl, Qp, ydotbar, pandaArm.ArmL.xdot.jl, lambda, threshold, weight);
     % right arm
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.jl, pandaArm.ArmR.Jjl, Qp, ydotbar, pandaArm.ArmR.xdot.jl, lambda, threshold, weight);
+    %[Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.jl, pandaArm.ArmR.Jjl, Qp, ydotbar, pandaArm.ArmR.xdot.jl, lambda, threshold, weight);
    
     % MINIMUM ALTITUDE TASK
     % we have two task of dimension 6, we consider here the all robot dof.
     % left arm
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.ma, pandaArm.ArmL.Jma, Qp, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
+    %[Qp, ydotbar] = iCAT_task(pandaArm.ArmL.A.ma, pandaArm.ArmL.Jma, Qp, ydotbar, pandaArm.ArmL.xdot.alt, lambda, threshold, weight);
     % right arm
-    [Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.ma, pandaArm.ArmR.Jma, Qp, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
+    %[Qp, ydotbar] = iCAT_task(pandaArm.ArmR.A.ma, pandaArm.ArmR.Jma, Qp, ydotbar, pandaArm.ArmR.xdot.alt, lambda, threshold, weight);
 
     % MOVE TASK
     % Left Arm 
@@ -229,19 +224,24 @@ for t = 0:dt:Tf
    
     % Update data plot
     plt = UpdateDataPlot(plt,pandaArm,t,loop, mission);
-    loop = loop + 1;
-  
+    % loop = loop + 1;
+
+    % distance_x(loop) = pandaArm.ArmL.wTt(1, 4) - pandaArm.ArmR.wTt(1, 4);
+    % traiettoria_L(:, loop) = pandaArm.ArmL.wTo(1:3, 4);
+    % traiettoria_R(:, loop) = pandaArm.ArmR.wTo(1:3, 4);
+    % punto_los(:,loop) = pandaArm.goal.los(1:3, 4);
     % add debug prints here
     if (mod(t,0.1) == 0)
         t;
         phase = mission.phase
         time = mission.phase_time;
+       
        if (mission.phase == 1)
             %add debug prints phase 1 here
 
             %disp(pandaArm.A.rc); %ok
 
-            disp(pandaArm.ArmL.A.jl);
+            %disp(pandaArm.ArmL.A.jl);
             %disp(pandaArm.ArmR.A.jl);
         
             % disp (pandaArm.ArmL.A.ma);
@@ -254,16 +254,32 @@ for t = 0:dt:Tf
             %add debug prints phase 2 here
 
             % disp(pandaArm.A.rc); %ok
-            
+
+            % disp("ArmL jl");
             % disp(pandaArm.ArmL.A.jl);
+            % disp("ArmR jl");
             % disp(pandaArm.ArmR.A.jl);
-            
+            % 
+            % disp("ArmL ma");
             % disp (pandaArm.ArmL.A.ma);
+            % disp("ArmR ma");
             % disp(pandaArm.ArmR.A.ma);
 
             % disp(pandaArm.ArmL.A.tool);
             % disp(pandaArm.ArmR.A.tool);
-             
+            % disp(pandaArm.goal.counter);
+            
+            loop = loop + 1;
+
+            disp("los");
+            disp(pandaArm.goal.los);
+            distance_x(loop) = pandaArm.ArmL.wTt(1, 4) - pandaArm.ArmR.wTt(1, 4);
+            traiettoria_L(:, loop) = pandaArm.ArmL.wTo(1:3, 4);
+            traiettoria_R(:, loop) = pandaArm.ArmR.wTo(1:3,4);
+            los_point (:, loop) = pandaArm.goal.los(1:3, 4);
+            [lin ang] = CartError(pandaArm.goal.los, pandaArm.ArmL.wTo);
+            lineare(:, loop) = lin;
+            angolare(: ,loop) = ang;
         elseif (mission.phase == 3)
             %add debug prints phase 2 here
 
