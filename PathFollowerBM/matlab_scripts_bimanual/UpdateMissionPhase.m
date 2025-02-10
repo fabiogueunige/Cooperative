@@ -1,4 +1,4 @@
-function [pandaArm, mission] = UpdateMissionPhase(pandaArm, mission)  
+function [pandaArm, mission, goal] = UpdateMissionPhase(pandaArm, mission, goal)  
         switch mission.phase
             case 1  % Go To Grasping Points
                 % computing the errors for the go-to action defining tasks
@@ -19,34 +19,34 @@ function [pandaArm, mission] = UpdateMissionPhase(pandaArm, mission)
                     pandaArm.ArmR.tDo = pandaArm.ArmR.wTt(1:3,4) - pandaArm.ArmR.wTo(1:3,4);
 
                     % initialize the counter 
-                    pandaArm.goal.counter = 1;
+                    goal.counter = 1;
 
                     % update with the new goals
-                    pandaArm.goal.previous = pandaArm.ArmL.wTo(:, :);
-                    pandaArm.goal.future = pandaArm.goal.wTog(:, :, pandaArm.goal.counter);
-                    pandaArm.goal.los = GetLosPoint(pandaArm.ArmL.wTo, pandaArm.goal.previous, pandaArm.goal.future); % compute the los
+                    goal.previous = pandaArm.ArmL.wTo(:, :);
+                    goal.future = goal.wTog(:, :, goal.counter);
+                    goal.los = GetLosPoint(pandaArm.ArmL.wTo, goal.previous, goal.future); % compute the los
                  end   
 
             case 2 % Cooperative Manipulation Start 
-                if(pandaArm.goal.counter < 2) % case when I need to reach the target exept the last one
-                    pandaArm.goal.los = GetLosPoint(pandaArm.ArmL.wTo, pandaArm.goal.previous, pandaArm.goal.future);
+                if(goal.counter < goal.n_goal) % case when I need to reach the target exept the last one
+                    goal.los = GetLosPoint(pandaArm.ArmL.wTo, goal.previous, goal.future);
                    
                     % computing the errors for the rigid move-to task
-                    [ang, lin] = CartError(pandaArm.goal.future, pandaArm.goal.los) % case when the loss point is near the target, == change point
+                    [ang, lin] = CartError(goal.future, goal.los); % case when the loss point is near the target, == change point
                     if (abs(lin) <= 1/1000 & ang <= deg2rad(1))
                         % update all the needed variable
-                        pandaArm.goal.previous = pandaArm.goal.wTog(:, :, pandaArm.goal.counter); % the counter indicate the last target
-                        pandaArm.goal.counter = pandaArm.goal.counter + 1;
-                        pandaArm.goal.future = pandaArm.goal.wTog(:, :, pandaArm.goal.counter); % indicate the next target pose
+                        goal.previous = goal.wTog(:, :, goal.counter); % the counter indicate the last target
+                        goal.counter = goal.counter + 1;
+                        goal.future = goal.wTog(:, :, goal.counter); % indicate the next target pose
                     end
                     
                 else    
-                    pandaArm.goal.los = pandaArm.goal.wTog(:, :, 2);
+                    goal.los = GetLosPoint(pandaArm.ArmL.wTo, goal.previous, goal.future);
                     
                     % computing the errors for the rigid move-to task
                     % check the error on last point 
-                    [ang_left, lin_left] = CartError(pandaArm.goal.wTog(:, :, 4), pandaArm.ArmL.wTo);
-                    [ang_right, lin_right] = CartError(pandaArm.goal.wTog(:, :, 4), pandaArm.ArmR.wTo);
+                    [ang_left, lin_left] = CartError(goal.wTog(:, :, goal.n_goal), pandaArm.ArmL.wTo);
+                    [ang_right, lin_right] = CartError(goal.wTog(:, :, goal.n_goal), pandaArm.ArmR.wTo);
         
                     % max error: 1/1000 cm and 3deg
                     if abs(lin_left) <= 1/1000 & ang_left <= deg2rad(1) & abs(lin_right) <= 1/1000 & ang_right <= deg2rad(1)

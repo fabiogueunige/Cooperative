@@ -49,11 +49,11 @@ plot3(traiettoria_R(1, :), traiettoria_R(2, :), traiettoria_R(3,:) , 'LineWidth'
 hold on
 plot3(los_point(1, :), los_point(2, :), los_point(3,:) , 'LineWidth', 1)
 hold on
-plot3 ( pandaArm.goal.wTog(1, 4, 1),  pandaArm.goal.wTog(2, 4, 1),  pandaArm.goal.wTog(3, 4, 1), 'ro', 'MarkerSize', 5, 'MarkerFaceColor', 'g');
+plot3 ( goal.wTog(1, 4, 1),  goal.wTog(2, 4, 1),  goal.wTog(3, 4, 1), 'ro', 'MarkerSize', 5, 'MarkerFaceColor', 'g');
 hold on
-plot3 ( pandaArm.goal.wTog(1, 4, 2),  pandaArm.goal.wTog(2, 4, 2),  pandaArm.goal.wTog(3, 4, 2), 'ro', 'MarkerSize', 5, 'MarkerFaceColor', 'g');
-plot3 ( pandaArm.goal.wTog(1, 4, 3),  pandaArm.goal.wTog(2, 4, 3),  pandaArm.goal.wTog(3, 4, 3), 'ro', 'MarkerSize', 5, 'MarkerFaceColor', 'g');
-plot3 ( pandaArm.goal.wTog(1, 4, 4),  pandaArm.goal.wTog(2, 4, 4),  pandaArm.goal.wTog(3, 4, 4), 'ro', 'MarkerSize', 5, 'MarkerFaceColor', 'g');
+plot3 ( goal.wTog(1, 4, 2),  goal.wTog(2, 4, 2),  goal.wTog(3, 4, 2), 'ro', 'MarkerSize', 5, 'MarkerFaceColor', 'g');
+plot3 ( goal.wTog(1, 4, 3),  goal.wTog(2, 4, 3),  goal.wTog(3, 4, 3), 'ro', 'MarkerSize', 5, 'MarkerFaceColor', 'g');
+plot3 ( goal.wTog(1, 4, 4),  goal.wTog(2, 4, 4),  goal.wTog(3, 4, 4), 'ro', 'MarkerSize', 5, 'MarkerFaceColor', 'g');
 grid on
 legend ("lef arm", "right arm", "los");
 

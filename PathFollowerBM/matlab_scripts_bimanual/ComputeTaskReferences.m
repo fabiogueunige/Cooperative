@@ -1,4 +1,4 @@
-function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
+function [pandaArm] = ComputeTaskReferences(pandaArm,mission,goal)
     % Compute distance between tools for plotting
     pandaArm.dist_tools = norm(pandaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4));
 
@@ -75,7 +75,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % Compute the loss point
            
             % Object position and orientation task reference
-            [ang, lin] = CartError (pandaArm.goal.los, pandaArm.ArmL.wTo); 
+            [ang, lin] = CartError (goal.los, pandaArm.ArmL.wTo); 
             pandaArm.ArmL.xdot.tool = gain_obj * [ang; lin];
 
             % limit the requested velocities...
@@ -85,7 +85,7 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
             % RIGHT ARM
             % -----------------------------------------------------------------
             % Object position and orientation task reference
-            [ang, lin] = CartError (pandaArm.goal.los, pandaArm.ArmR.wTo);
+            [ang, lin] = CartError (goal.los, pandaArm.ArmR.wTo);
             pandaArm.ArmR.xdot.tool = gain_obj * [ang; lin];
 
             % limit the requested velocities...

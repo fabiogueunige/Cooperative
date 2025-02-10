@@ -8,7 +8,7 @@ real_robot = false;
 %% Initialization - DON'T CHANGE ANYTHING from HERE ... 
 % Simulation variables (integration and final time)
 dt = 0.005;
-Tf = 60; %simulation time
+Tf = 180; %simulation time
 loop = 1;
 maxloops = ceil(Tf/dt);
 mission.phase = 1;
@@ -36,7 +36,7 @@ wTb_right (1:3,1:3) = rotation(0, 0, pi);
 wTb_right (1:3,4) = [1.06; -0.01; 0];
 
 plt = InitDataPlot(maxloops);
-pandaArm = InitRobot(model, wTb_left, wTb_right);
+[pandaArm, goal] = InitRobot(model, wTb_left, wTb_right);
 
 %Init object and tools frames
 obj_length = 0.12;
@@ -134,7 +134,7 @@ for t = 0:dt:Tf
     pandaArm = UpdateTransforms(pandaArm, mission);
     pandaArm = ComputeJacobians(pandaArm, mission);
     pandaArm = ComputeActivationFunctions(pandaArm,mission);
-    pandaArm = ComputeTaskReferences(pandaArm,mission);
+    pandaArm = ComputeTaskReferences(pandaArm,mission,goal);
 
     % main kinematic algorithm initialization
     % ydotbar order is [qdot_1, qdot_2, ..., qdot_7, xdot, ydot, zdot, omega_x, omega_y, omega_z]
@@ -220,16 +220,12 @@ for t = 0:dt:Tf
     end
     % check if the mission phase should be changed
     mission.phase_time = mission.phase_time + dt;
-    [pandaArm,mission] = UpdateMissionPhase(pandaArm, mission);
+    [pandaArm,mission,goal] = UpdateMissionPhase(pandaArm,mission,goal);
    
     % Update data plot
     plt = UpdateDataPlot(plt,pandaArm,t,loop, mission);
     % loop = loop + 1;
 
-    % distance_x(loop) = pandaArm.ArmL.wTt(1, 4) - pandaArm.ArmR.wTt(1, 4);
-    % traiettoria_L(:, loop) = pandaArm.ArmL.wTo(1:3, 4);
-    % traiettoria_R(:, loop) = pandaArm.ArmR.wTo(1:3, 4);
-    % punto_los(:,loop) = pandaArm.goal.los(1:3, 4);
     % add debug prints here
     if (mod(t,0.1) == 0)
         t;
@@ -259,25 +255,25 @@ for t = 0:dt:Tf
             % disp(pandaArm.ArmL.A.jl);
             % disp("ArmR jl");
             % disp(pandaArm.ArmR.A.jl);
-            % 
-            % disp("ArmL ma");
-            % disp (pandaArm.ArmL.A.ma);
-            % disp("ArmR ma");
-            % disp(pandaArm.ArmR.A.ma);
+
+            disp("ArmL ma");
+            disp (pandaArm.ArmL.A.ma);
+            disp("ArmR ma");
+            disp(pandaArm.ArmR.A.ma);
 
             % disp(pandaArm.ArmL.A.tool);
             % disp(pandaArm.ArmR.A.tool);
-            % disp(pandaArm.goal.counter);
+            % disp(goal.counter);
             
             loop = loop + 1;
 
-            disp("los");
-            disp(pandaArm.goal.los);
+            % disp("los");
+            % disp(goal.los);
             distance_x(loop) = pandaArm.ArmL.wTt(1, 4) - pandaArm.ArmR.wTt(1, 4);
             traiettoria_L(:, loop) = pandaArm.ArmL.wTo(1:3, 4);
             traiettoria_R(:, loop) = pandaArm.ArmR.wTo(1:3,4);
-            los_point (:, loop) = pandaArm.goal.los(1:3, 4);
-            [lin ang] = CartError(pandaArm.goal.los, pandaArm.ArmL.wTo);
+            los_point (:, loop) = goal.los(1:3, 4);
+            [lin ang] = CartError(goal.los, pandaArm.ArmL.wTo);
             lineare(:, loop) = lin;
             angolare(: ,loop) = ang;
         elseif (mission.phase == 3)

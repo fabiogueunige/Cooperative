@@ -1,4 +1,4 @@
-function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
+function [pandaArm, goal] = InitRobot(model,wTb_left,wTb_right)
    
     %% DO NOT CHANGE FROM HERE ...
     % Init two field of the main structure pandaArm containing the two robot
@@ -72,22 +72,18 @@ function [pandaArm] = InitRobot(model,wTb_left,wTb_right)
 
     pandaArm.ArmL.xdot.tool = [];
     pandaArm.ArmR.xdot.tool = [];
-
+    
     % Define goals
-    
-    pandaArm.goal.wTog = eye(4);
-    pandaArm.goal.wTog(1:3, 4, 1) = [0.70, -0.35, 0.50]';
+    goal.wTog(1:4, 1:4, 1) = eye(4);
+    goal.wTog(1:4, 1:4, 2) = eye(4);
+    goal.wTog(1:4, 1:4, 3) = eye(4);
+    goal.wTog(1:4, 1:4, 4) = eye(4);
 
-    pandaArm.goal.wTog(1:4,1:4,2) = eye(4);
-    pandaArm.goal.wTog(1:3, 4, 2) = [0.70, -0.35, 0.20]';
-
-    pandaArm.goal.wTog(1:4,1:4,3) = eye(4);
-    pandaArm.goal.wTog(1:3, 4, 3) = [0.30, -0.35, 0.20]';
-    
-    pandaArm.goal.wTog(1:4,1:4,4) = eye(4);
-    pandaArm.goal.wTog(1:3, 4, 4) = [0.30, -0.35, 0.50]';
-
-    pandaArm.goal.counter = 0;
+    goal.wTog(1:3, 4, 1) = [0.90, -0.35, 0.30]';
+    goal.wTog(1:3, 4, 2) = [0.70, -0.35, 0.60]';
+    goal.wTog(1:3, 4, 3) = [-0.20, -0.35, 0.60]';
+    goal.wTog(1:3, 4, 4) = [-0.2, -0.35, 0.30]';
+    goal.n_goal = 4;
 
 end
 
