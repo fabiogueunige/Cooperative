@@ -65,8 +65,8 @@ uvms.J.vh = [zeros(1,10) 0 0 1];
 uvms.J.vp = [zeros(3,7) uvms.wTv(1:3,1:3) zeros(3)];
 
 if (mission.phase == 2)
-    J = n_t * [zeros(3, 7), -1/(norm(d)^2) * skew(d), -eye(3)]; % one row
-    uvms.J.va = [zeros(1, 7), J(8:9), zeros(1, 3), 1]; % one row
+    J = n_t * [zeros(3, 7), (-1/(norm(d).^2)) * skew(d), -eye(3)]; % one row
+    uvms.J.va = J; % [zeros(1, 7), J(8:9), 0, 0, 0, J(13)]; % one row
 end
 
 % AC attitude control Jacobian

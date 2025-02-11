@@ -79,7 +79,7 @@ uvms.altitude = v_kw' * [0 0 uvms.sensorDistance]';
 % AC = Attitude Control ( roll, pitch CONTROL TASK)
 % RN = reaching nodule task (CONTROL TASK)
 uvms.actions.safe_navigation.tasks = ["MA", "HA", "VH","VP", "AC"];
-uvms.actions.align.tasks = ["MA", "HA","VA"];
+uvms.actions.align.tasks = ["MA", "HA", "AC", "VA"];
 uvms.actions.landing.tasks = [ "HA", "VH", "VP", "AC"];
 uvms.actions.fixed_base_manipulation.tasks = ["HA","JL", "VH", "RN"];
 
@@ -125,13 +125,13 @@ for t = 0:deltat:end_time
     
     % VP (vehicle position control: x, y, z; CONTROL TASK)
     [Qp, ydotbar] = iCAT_task(uvms.A.vp, uvms.J.vp, Qp, ydotbar, uvms.xdot.vp, 0.0001, 0.01, 10);
-    
-    % VA (vehicle aligning CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.va, uvms.J.va, Qp, ydotbar, uvms.xdot.va, 0.0001, 0.01, 10);
-    
+      
     % AC (vehicle attitude control: roll, pitch; CONTROL TASK)
     [Qp, ydotbar] = iCAT_task(uvms.A.ac, uvms.J.ac, Qp, ydotbar, uvms.xdot.ac, 0.0001, 0.01, 10);
 
+    % VA (vehicle aligning CONTROL TASK)
+    [Qp, ydotbar] = iCAT_task(uvms.A.va, uvms.J.va, Qp, ydotbar, uvms.xdot.va, 0.0001, 0.01, 10);
+    
     % RN (reaching nodule: q1, q2, q3, q4, q5, q6, q7; CONTROL TASK)
     [Qp, ydotbar] = iCAT_task(uvms.A.t, [uvms.J.t_a zeros(6)], Qp, ydotbar, uvms.xdot.rn, 0.0001, 0.01, 10);
    

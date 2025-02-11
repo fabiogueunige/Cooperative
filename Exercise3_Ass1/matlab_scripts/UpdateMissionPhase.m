@@ -13,7 +13,7 @@ function [uvms, mission] = UpdateMissionPhase(uvms, mission)
                 uvms.act_action = uvms.actions.align.tasks;
             end
         case 2 % aligning task
-            if uvms.angle <= deg2rad(0.5)
+            if abs(uvms.angle) <= deg2rad(1)
                 mission.phase = 3;
                 mission.phase_time = 0;
                 uvms.prev_action = uvms.act_action;
