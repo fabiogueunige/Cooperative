@@ -38,23 +38,29 @@ uvms.mu  = 0;
 uvms.phi = zeros(3,1);
 uvms.sensorDistance = 0;
 
-uvms.Jjl = [];
-uvms.Jmu = [];
-uvms.Jha = [];
-uvms.Jt_a = [];
-uvms.Jt_v = [];
-uvms.Jt = [];
+uvms.J.t_a = zeros(6,7);
+uvms.J.t_v = zeros(6,7);
+uvms.J.t = zeros(6,13);
+uvms.J.ma = zeros(1,13);
+uvms.J.ha = zeros(2, 13);
+uvms.J.jl = zeros(7, 13);
+uvms.J.vh = zeros(1, 13);
+uvms.J.vp = zeros(3, 13);
+uvms.J.va = zeros(1,13);
+uvms.J.ac =zeros(2, 13);
 
-uvms.xdot.jl = [];
 uvms.xdot.mu = [];
+uvms.xdot.jl = [];
 uvms.xdot.ha = [];
 uvms.xdot.t = [];
-    
-uvms.A.jl = zeros(7,7);
+uvms.xdot.va = [];
+
 uvms.A.mu = 0;
-uvms.A.ha = zeros(1,1);
+uvms.A.ma = 0;
+uvms.A.ha = zeros(2);
+uvms.A.jl = zeros(7);
+uvms.A.vh = 0;
 uvms.A.t = zeros(6,6);
-uvms.angle = 500;
 
 end
 

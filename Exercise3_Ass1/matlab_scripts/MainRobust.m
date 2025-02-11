@@ -1,12 +1,11 @@
-function MainRobust
-addpath('./simulation_scripts');
 clc;
 clear;
 close all
 
+addpath('./simulation_scripts');
 % Simulation variables (integration and final time)
 deltat = 0.005;
-end_time = 30;
+end_time = 40;
 loop = 1;
 maxloops = ceil(end_time/deltat);
 
@@ -43,7 +42,7 @@ uvms = InitUVMS('Robust');
 % uvms.q 
 % Initial joint positions. You can change these values to initialize the simulation with a 
 % different starting position for the arm
-uvms.q = [-0.0031 0 0.0128 -1.2460 0.0137 0.0853-pi/2 0.0137]'; 
+uvms.q = [-0.0031, 0, 0.0128, -1.2460, 0.0137, 0.0853-pi/2, 0.0137]'; 
 % uvms.p
 % initial position of the vehicle
 % the vector contains the values in the following order
@@ -71,16 +70,18 @@ v_kw = uvms.vTw(1:3,1:3) * w_kw;
 uvms.altitude = v_kw' * [0 0 uvms.sensorDistance]';
 
 % definition of action
-% MA = Minimum Altitude
-% HA = Horizontal Attitude
-% VH = Vehicle Heading
-% VP = Vehicle Position
-% AC = Attitude Control
-% AC0 = Altitude control to 0 (equality task)
-% RN = reaching nodule task
+% MA = Minimum Altitude (z SAFETY TASK)
+% HA = Horizontal Attitude ( roll, pitch SAFETY TASK)
+% JL = Joints Limit ( SAFETY TASK)
+% VH = Vehicle Heading (yaw CONTROL TASK)
+% VP = Vehicle Position (x, y, z CONTROL TASK)
+% VA = Veichle Aligning (CONTROL TASK)
+% AC = Attitude Control ( roll, pitch CONTROL TASK)
+% RN = reaching nodule task (CONTROL TASK)
 uvms.actions.safe_navigation.tasks = ["MA", "HA", "VH","VP", "AC"];
-uvms.actions.landing.tasks = [ "HA", "VH2", "ACL", "VP2"];
-uvms.actions.fixed_base_manipulation.tasks = ["HA","JL", "VH", "VP2", "RN"];
+uvms.actions.align.tasks = ["MA", "HA","VA"];
+uvms.actions.landing.tasks = [ "HA", "VH", "VP", "AC"];
+uvms.actions.fixed_base_manipulation.tasks = ["HA","JL", "VH", "RN"];
 
 uvms.prev_action = uvms.actions.safe_navigation.tasks;
 uvms.act_action = uvms.prev_action;
@@ -89,7 +90,7 @@ tic
 for t = 0:deltat:end_time
     % update all the involved variables
     uvms = UpdateTransforms(uvms);
-    uvms = ComputeJacobians(uvms);
+    uvms = ComputeJacobians(uvms, mission);
     uvms = ComputeTaskReferences(uvms, mission);
     uvms = ComputeActivationFunctions(uvms, mission);
     
@@ -110,53 +111,33 @@ for t = 0:deltat:end_time
     % the sequence of iCAT_task calls defines the priority
     % robot task sequence changes basing on the mission phase
    
-    %% SAFETY WAYPOINT NAVIGATION
     % MA (minimum altitude: z; SAFETY TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.ma,    uvms.Jma,    Qp, ydotbar, uvms.xdot.ma,  0.0001,   0.01, 10);
+    [Qp, ydotbar] = iCAT_task(uvms.A.ma, uvms.J.ma, Qp, ydotbar, uvms.xdot.ma, 0.0001, 0.01, 10);
 
     % HA (horizontal attitude: roll, pitch; SAFETY TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.ha,    uvms.Jha,    Qp, ydotbar, uvms.xdot.ha,  0.0001,   0.01, 10);
+    [Qp, ydotbar] = iCAT_task(uvms.A.ha, uvms.J.ha, Qp, ydotbar, uvms.xdot.ha, 0.0001, 0.01, 10);
+        
+    % JL (joint limits: q1, q2, q3, q4, q5, q6, q7; SAFETY TASK)
+    [Qp, ydotbar] = iCAT_task(uvms.A.jl, uvms.J.jl, Qp, ydotbar, uvms.xdot.jl, 0.0001, 0.01, 10);
     
     % VH (vehicle heading control: yaw; CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.vh,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
+    [Qp, ydotbar] = iCAT_task(uvms.A.vh, uvms.J.vh, Qp, ydotbar, uvms.xdot.vh, 0.0001, 0.01, 10);
     
     % VP (vehicle position control: x, y, z; CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.gv,    uvms.Jgv,    Qp, ydotbar, uvms.xdot.gv,  0.0001,   0.01, 10);
+    [Qp, ydotbar] = iCAT_task(uvms.A.vp, uvms.J.vp, Qp, ydotbar, uvms.xdot.vp, 0.0001, 0.01, 10);
+    
+    % VA (vehicle aligning CONTROL TASK)
+    [Qp, ydotbar] = iCAT_task(uvms.A.va, uvms.J.va, Qp, ydotbar, uvms.xdot.va, 0.0001, 0.01, 10);
     
     % AC (vehicle attitude control: roll, pitch; CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.ac,    uvms.Jac,    Qp, ydotbar, uvms.xdot.ac,  0.0001,   0.01, 10);
+    [Qp, ydotbar] = iCAT_task(uvms.A.ac, uvms.J.ac, Qp, ydotbar, uvms.xdot.ac, 0.0001, 0.01, 10);
 
-    %% LANDING
-    % HA (horizontal attitude: roll, pitch; SAFETY TASK)
-        
-    % VH2 (vehicle heading control: yaw; CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.vh2,    uvms.Jvh,    Qp, ydotbar, uvms.xdot.vh,  0.0001,   0.01, 10);
-    
-    % ACL (vehicle altitude control for landing, z; CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.acl,    uvms.Jma,    Qp, ydotbar, uvms.xdot.acl,  0.0001,   0.01, 10);
-    
-    % VP2 (vehicle position control: x, y; CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.gv2,    uvms.Jgv(1:2, :),    Qp, ydotbar, uvms.xdot.gv(1:2),  0.0001,   0.01, 10);
-    
-    
-    %% FIXED BASED MANIPULATION ACTION
-    % JL (joint limits: q1, q2, q3, q4, q5, q6, q7; SAFETY TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.jl,    uvms.Jjl,    Qp, ydotbar, uvms.xdot.jl,  0.0001,   0.01, 10);
-
-    % VH2 (vehicle heading control: yaw; CONTROL TASK)
-    
-    % ACL (vehicle altitude control for stay attached to the ground, z; CONTROL TASK)
-       
-    % VP (vehicle position control: x, y CONTROL TASK)
-    
     % RN (reaching nodule: q1, q2, q3, q4, q5, q6, q7; CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.t,    [uvms.Jt_a zeros(6)],    Qp, ydotbar, uvms.xdot.rn,  0.0001,   0.01, 10);
-
-    
+    [Qp, ydotbar] = iCAT_task(uvms.A.t, [uvms.J.t_a zeros(6)], Qp, ydotbar, uvms.xdot.rn, 0.0001, 0.01, 10);
+   
     % last task  
-    [Qp, ydotbar] = iCAT_task(eye(13),     eye(13),    Qp, ydotbar, zeros(13,1),  0.0001,   0.01, 10);    % this task should be the last one
+    [Qp, ydotbar] = iCAT_task(eye(13), eye(13), Qp, ydotbar, zeros(13,1), 0.0001, 0.01, 10);
     
-
     mission.phase_time = mission.phase_time + deltat;
 
     % get the two variables for integration
@@ -181,10 +162,18 @@ for t = 0:deltat:end_time
     % add debug prints here
     if (mod(t,0.1) == 0)
         phase = mission.phase
-        % mission.phase_time  
-        % disp(uvms.A.gv2)
-        % disp(uvms.A.t)
+        if mission.phase == 1
+            % mission.phase_time  
+            % disp(uvms.A.gv2)
+            % disp(uvms.A.t)
+        elseif mission.phase == 2
+            
+    
+        elseif mission.phase == 3
+
+        end
     end
+
 
     % enable this to have the simulation approximately evolving like real
     % time. Remove to go as fast as possible
@@ -196,4 +185,3 @@ fclose(uArm);
 
 PrintPlot(plt);
 
-end

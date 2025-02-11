@@ -11,10 +11,7 @@ if  (sinth > 0.00000000001)
 else
     if (costh>0)
         c = 0;
-    else 
-        c = 0;
     end
-    
 end
 
 end

@@ -1,4 +1,4 @@
-function [uvms] = ComputeJacobians(uvms)
+function [uvms] = ComputeJacobians(uvms, mission)
 % compute the relevant Jacobians here
 % joint limits
 % manipulability
@@ -21,41 +21,57 @@ function [uvms] = ComputeJacobians(uvms)
 % [omegax_t omegay_t omegaz_t xdot_t ydot_t zdot_t] = Jt ydot
 % [angular velocities; linear velocities]
 %
+
 % Ste is the rigid body transformation from vehicle-frame to end-effector
 % frame projected on <v>
 uvms.Ste = [eye(3) zeros(3);  -skew(uvms.vTe(1:3,1:3)*uvms.eTt(1:3,4)) eye(3)];
 % uvms.bJe contains the arm end-effector Jacobian (6x7) wrt arm base
 % top three rows are angular velocities, bottom three linear velocities
-uvms.Jt_a  = uvms.Ste * [uvms.vTb(1:3,1:3) zeros(3,3); zeros(3,3) uvms.vTb(1:3,1:3)] * uvms.bJe;
+uvms.J.t_a  = uvms.Ste * [uvms.vTb(1:3,1:3) zeros(3,3); zeros(3,3) uvms.vTb(1:3,1:3)] * uvms.bJe;
 % vehicle contribution is simply a rigid body transformation from vehicle
 % frame to tool frame. Notice that linear and angular velocities are
 % swapped due to the different definitions of the task and control
 % variables
-uvms.Jt_v = [zeros(3) eye(3); eye(3) -skew(uvms.vTt(1:3,4))];
+uvms.J.t_v = [zeros(3) eye(3); eye(3) -skew(uvms.vTt(1:3,4))];
 % juxtapose the two Jacobians to obtain the global one
-uvms.Jt = [uvms.Jt_a uvms.Jt_v];
+uvms.J.t = [uvms.J.t_a uvms.J.t_v];
 
-% min alt 
+% compute all the needed value for compute the jacobian when mission.phase == 2
+if (mission.phase == 2) % in thisncase the heading jacobian is different, aligning task 
+   d = uvms.rock_center - uvms.wTv(1:3, 4); % distance vector between rock and rover
+   nd = d / norm(d); % normalized distance 
+   n = cross(uvms.wTv(1:3, 1), nd); % axis of rotation
+   n_t = n';
+end
+
+% MA veichle minimum altitude Jacobian
 w_kw = [0 0 1]'; % z-axis on world frame projected on world frame
 v_kw = uvms.vTw(1:3,1:3) * w_kw; % projection on vehicle frame
-% vehicle minimum altitude Jacobian
-uvms.Jma = [zeros(1,7) v_kw' zeros(1,3)];
 
-% vehicle horizonal attitude Jacobian
-uvms.Jha = [zeros(1,10) 1 0 0;
+% vehicle minimum altitude Jacobian
+uvms.J.ma = [zeros(1,7) v_kw' zeros(1,3)];
+
+% HA vehicle horizonal attitude Jacobian
+uvms.J.ha = [zeros(1,10) 1 0 0;
             zeros(1,10) 0 1 0];
 
-% vehicle joint limits Jacobian
-uvms.Jjl = [eye(7) zeros(7,6)];
-% vehicle heading control Jacobian
-uvms.Jvh = [zeros(1,10) 0 0 1];
+% JL vehicle joint limits Jacobian
+uvms.J.jl = [eye(7) zeros(7,6)];
 
-% vehicle position Jacobian projected on <w>
-uvms.Jgv = [zeros(3,7) uvms.wTv(1:3,1:3) zeros(3)];
+% VH vehicle heading control Jacobian
+uvms.J.vh = [zeros(1,10) 0 0 1];
 
-% attitude control Jacobian
-uvms.Jac = [zeros(2,10) [1 0 0; 0 1 0]];
+% VP vehicle position Jacobian projected on <w>
+uvms.J.vp = [zeros(3,7) uvms.wTv(1:3,1:3) zeros(3)];
 
+if (mission.phase == 2)
+    J = n_t * [zeros(3, 7), -1/(norm(d)^2) * skew(d), -eye(3)]; % one row
+    uvms.J.va = [zeros(1, 7), J(8:9), zeros(1, 3), 1]; % one row
+end
 
+% AC attitude control Jacobian
+uvms.J.ac = zeros(2,13);
+uvms.J.ac(1,11) = 1;
+uvms.J.ac(2,12) = 1;
 
 end

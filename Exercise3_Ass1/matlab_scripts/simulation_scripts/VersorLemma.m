@@ -1,4 +1,4 @@
-function [ out ] = VersorLemma( R1, R2 )
+function [ out, theta] = VersorLemma( R1, R2 )
 i1 = R1(:,1);
 j1 = R1(:,2);
 k1= R1(:,3);
