@@ -79,10 +79,10 @@ function [pandaArm, goal] = InitRobot(model,wTb_left,wTb_right)
     goal.wTog(1:4, 1:4, 3) = eye(4);
     goal.wTog(1:4, 1:4, 4) = eye(4);
 
-    goal.wTog(1:3, 4, 1) = [0.90, -0.35, 0.30]';
-    goal.wTog(1:3, 4, 2) = [0.70, -0.35, 0.60]';
-    goal.wTog(1:3, 4, 3) = [-0.20, -0.35, 0.60]';
-    goal.wTog(1:3, 4, 4) = [-0.2, -0.35, 0.30]';
+    goal.wTog(1:3, 4, 1) = [0.70, -0.35, 0.50]';
+    goal.wTog(1:3, 4, 2) = [0.5, -0.35, 0.50]';
+    goal.wTog(1:3, 4, 3) = [0.50, -0.35, 0.30]';
+    goal.wTog(1:3, 4, 4) = [0.70, -0.35, 0.30]';
     goal.n_goal = 4;
 
 end

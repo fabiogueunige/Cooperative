@@ -3,7 +3,7 @@ addpath('./simulation_scripts');
 clc;
 clear;
 close all
-real_robot = false;
+real_robot = true;
 
 %% Initialization - DON'T CHANGE ANYTHING from HERE ... 
 % Simulation variables (integration and final time)
@@ -256,10 +256,10 @@ for t = 0:dt:Tf
             % disp("ArmR jl");
             % disp(pandaArm.ArmR.A.jl);
 
-            disp("ArmL ma");
-            disp (pandaArm.ArmL.A.ma);
-            disp("ArmR ma");
-            disp(pandaArm.ArmR.A.ma);
+            % disp("ArmL ma");
+            % disp (pandaArm.ArmL.A.ma);
+            % disp("ArmR ma");
+            % disp(pandaArm.ArmR.A.ma);
 
             % disp(pandaArm.ArmL.A.tool);
             % disp(pandaArm.ArmR.A.tool);

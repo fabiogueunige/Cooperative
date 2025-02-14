@@ -49,7 +49,7 @@ function [pandaArm, mission, goal] = UpdateMissionPhase(pandaArm, mission, goal)
                     [ang_right, lin_right] = CartError(goal.wTog(:, :, goal.n_goal), pandaArm.ArmR.wTo);
         
                     % max error: 1/1000 cm and 3deg
-                    if abs(lin_left) <= 1/1000 & ang_left <= deg2rad(1) & abs(lin_right) <= 1/1000 & ang_right <= deg2rad(1)
+                    if abs(lin_left) <= 1/10 & ang_left <= deg2rad(1) & abs(lin_right) <= 1/10 & ang_right <= deg2rad(1)
                        mission.phase = 3;
                        mission.phase_time = 0;
                        mission.prev_action = mission.actions.coop_manip.tasks;

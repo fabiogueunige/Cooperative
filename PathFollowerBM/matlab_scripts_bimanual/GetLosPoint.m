@@ -28,5 +28,5 @@ function Los = GetLosPoint(P, A, B)
     Q = A + t * v;
     
     % Los: Point moved of one unit vector on line
-    Los = [eye(3), Q + (v_normalized * 0.05); 0, 0, 0, 1];
+    Los = [eye(3), Q + (v_normalized * 0.02); 0, 0, 0, 1];
 end
