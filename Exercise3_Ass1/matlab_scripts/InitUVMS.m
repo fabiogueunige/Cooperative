@@ -46,21 +46,24 @@ uvms.J.ha = zeros(2, 13);
 uvms.J.jl = zeros(7, 13);
 uvms.J.vh = zeros(1, 13);
 uvms.J.vp = zeros(3, 13);
-uvms.J.va = zeros(1,13);
 uvms.J.ac =zeros(2, 13);
+uvms.J.va = zeros(1,13);
 
 uvms.xdot.mu = [];
 uvms.xdot.jl = [];
 uvms.xdot.ha = [];
+uvms.xdot.vh = [];
 uvms.xdot.t = [];
-uvms.xdot.va = [];
+uvms.xdot.va = 0;
 
 uvms.A.mu = 0;
 uvms.A.ma = 0;
-uvms.A.ha = zeros(2);
-uvms.A.jl = zeros(7);
+uvms.A.ha = zeros(2,2);
+uvms.A.jl = zeros(7,7);
 uvms.A.vh = 0;
 uvms.A.t = zeros(6,6);
+uvms.A.va = 0;
+
 
 end
 

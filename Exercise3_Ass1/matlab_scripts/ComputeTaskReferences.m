@@ -1,29 +1,11 @@
 function [uvms] = ComputeTaskReferences(uvms, mission)
 % compute the task references here
 
-% Extract rover and rock positions in the world frame
-p_rover = uvms.wTv(1:2, 4); % (x, y) coordinates of the rover in the world frame
-p_rock  = uvms.rock_center(1:2); % (x, y) coordinates of the rock in the world frame
 % Calculate the direction vector from the rover to the rock
-d = p_rock - p_rover; % Direction vector
-nd = d / norm(d); % Normalized to avoid numerical issues
-
-% Extract the direction of the rover's X-axis in the world frame 
-x_axis_rover = uvms.wTv(1:2,1);   % First column of the rotation matrix
-
-% Check if the x_vector is a versor, because exctract the firt two
-% components
-norm_x_rover = norm(x_axis_rover);
-if abs(norm_x_rover - 1) > 1e-6
-    % normalize the vector
-    x_axis_rover = x_axis_rover / norm_x_rover;
+if  mission.phase == 2
+    % Calculate the reference velocity to align with the rock
+    xdot_ref = -0.3 * (0 - norm(uvms.rho_w));
 end
-% Calculate the angle between the rover's X-axis and the direction to the rock
-uvms.angle = atan2(det([x_axis_rover, nd]), dot(x_axis_rover, nd));
-
-% Calculate the reference velocity to align with the rock
-xdot_ref = 0.3 * (uvms.angle);
-
 
 % reference for tool-frame position control task
 [ang, lin] = CartError(uvms.vTg , uvms.vTt);
@@ -51,7 +33,7 @@ if mission.phase == 1
 else % mission.phase == 2 || mission.phase == 3 || mission.phase == 4
     % in this case the rover mus be aligned with the rock
     % compute the theta_dot reference (angular error)
-   uvms.xdot.vh = xdot_ref;
+   %uvms.xdot.vh = xdot_ref; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 uvms.xdot.vh = Saturate(uvms.xdot.vh, 0.8); % saturation, computed in every task
 
@@ -72,8 +54,10 @@ uvms.xdot.ac = Saturate(uvms.xdot.ac, 0.8);
 
 % VA Veichle Aligning
 % in this case the rover mus be aligned with the rock
-uvms.xdot.va = xdot_ref;
-uvms.xdot.va = Saturate(uvms.xdot.va, 0.8);
+if mission.phase == 2
+    uvms.xdot.va = xdot_ref;
+    uvms.xdot.va = Saturate(uvms.xdot.va, 0.8);
+end
 
 % RN grasping task reference
 [ang, lin] = CartError(uvms.wTg, uvms.wTt); % error between goal and tool

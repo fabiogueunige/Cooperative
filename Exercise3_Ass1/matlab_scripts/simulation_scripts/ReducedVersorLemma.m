@@ -1,4 +1,4 @@
-function c = ReducedVersorLemma( a,  b)
+function [c, theta]    = ReducedVersorLemma( a,  b)
 
 vsinth = cross(a,b);
 costh = dot(a,b);

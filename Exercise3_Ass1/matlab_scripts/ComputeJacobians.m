@@ -38,10 +38,12 @@ uvms.J.t = [uvms.J.t_a uvms.J.t_v];
 
 % compute all the needed value for compute the jacobian when mission.phase == 2
 if (mission.phase == 2) % in thisncase the heading jacobian is different, aligning task 
-   d = uvms.rock_center - uvms.wTv(1:3, 4); % distance vector between rock and rover
-   nd = d / norm(d); % normalized distance 
-   n = cross(uvms.wTv(1:3, 1), nd); % axis of rotation
-   n_t = n';
+   k_w = [0; 0; 1];
+   d_w = (eye(3) - k_w * k_w') * (uvms.rock_center - uvms.wTv(1:3, 4)); % distance vector between rock and rover, projected on plane xy of world frame
+   nd_w = d_w / norm(d_w); % normalized distance, projected on world
+   x_v_w = (eye(3) - k_w * k_w') * uvms.wTv(1:3, 1);
+   uvms.rho_w = ReducedVersorLemma(nd_w, x_v_w); % rho = v * theta, projected on world frame 
+   rho_w = uvms.rho_w / norm(uvms.rho_w); % axis of rotation 
 end
 
 % MA veichle minimum altitude Jacobian
@@ -64,14 +66,15 @@ uvms.J.vh = [zeros(1,10) 0 0 1];
 % VP vehicle position Jacobian projected on <w>
 uvms.J.vp = [zeros(3,7) uvms.wTv(1:3,1:3) zeros(3)];
 
-if (mission.phase == 2)
-    J = n_t * [zeros(3, 7), (-1/(norm(d).^2)) * skew(d), -eye(3)]; % one row
-    uvms.J.va = J; % [zeros(1, 7), J(8:9), 0, 0, 0, J(13)]; % one row
-end
-
 % AC attitude control Jacobian
 uvms.J.ac = zeros(2,13);
 uvms.J.ac(1,11) = 1;
 uvms.J.ac(2,12) = 1;
+
+% VA veichle aligning jacobian
+if (mission.phase == 2)
+    J = rho_w' * [zeros(3, 7), (-1/(norm(d_w).^2)) * skew(d_w) * (eye(3) - uvms.wTv(1:3, 3) * uvms.wTv(1:3, 3)'), -eye(3)]; % one row
+    uvms.J.va = J; 
+end
 
 end

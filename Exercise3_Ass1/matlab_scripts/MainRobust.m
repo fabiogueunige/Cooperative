@@ -9,7 +9,7 @@ end_time = 40;
 loop = 1;
 maxloops = ceil(end_time/deltat);
 
-% this struct can be used to evolve what the UVMS has to do
+% this struct can be used to1 evolve what the UVMS has to do
 mission.phase = 1;
 mission.phase_time = 0;
 
@@ -79,9 +79,9 @@ uvms.altitude = v_kw' * [0 0 uvms.sensorDistance]';
 % AC = Attitude Control ( roll, pitch CONTROL TASK)
 % RN = reaching nodule task (CONTROL TASK)
 uvms.actions.safe_navigation.tasks = ["MA", "HA", "VH","VP", "AC"];
-uvms.actions.align.tasks = ["MA", "HA", "AC", "VA"];
-uvms.actions.landing.tasks = [ "HA", "VH", "VP", "AC"];
-uvms.actions.fixed_base_manipulation.tasks = ["HA","JL", "VH", "RN"];
+uvms.actions.align.tasks = ["MA", "HA", "VA"];
+uvms.actions.landing.tasks = [ "HA","VP"];
+uvms.actions.fixed_base_manipulation.tasks = ["HA","JL", "RN"];
 
 uvms.prev_action = uvms.actions.safe_navigation.tasks;
 uvms.act_action = uvms.prev_action;
@@ -126,8 +126,8 @@ for t = 0:deltat:end_time
     % VP (vehicle position control: x, y, z; CONTROL TASK)
     [Qp, ydotbar] = iCAT_task(uvms.A.vp, uvms.J.vp, Qp, ydotbar, uvms.xdot.vp, 0.0001, 0.01, 10);
       
-    % AC (vehicle attitude control: roll, pitch; CONTROL TASK)
-    [Qp, ydotbar] = iCAT_task(uvms.A.ac, uvms.J.ac, Qp, ydotbar, uvms.xdot.ac, 0.0001, 0.01, 10);
+    % % AC (vehicle attitude control: roll, pitch; CONTROL TASK)
+    % [Qp, ydotbar] = iCAT_task(uvms.A.ac, uvms.J.ac, Qp, ydotbar, uvms.xdot.ac, 0.0001, 0.01, 10);
 
     % VA (vehicle aligning CONTROL TASK)
     [Qp, ydotbar] = iCAT_task(uvms.A.va, uvms.J.va, Qp, ydotbar, uvms.xdot.va, 0.0001, 0.01, 10);

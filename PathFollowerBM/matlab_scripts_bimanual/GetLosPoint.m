@@ -22,7 +22,7 @@ function Los = GetLosPoint(P, A, B)
     v_normalized = v / norm(v);
 
     % Compute parameter t
-    t = dot(P - A, v) / dot(v, v);
+    t = dot(P - A, v) / dot(v,v);
     
     % Q: Projected point of robot on line [x, y, z]
     Q = A + t * v;
