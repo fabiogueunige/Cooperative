@@ -7,8 +7,17 @@ p_rock  = uvms.rock_center(1:2); % (x, y) coordinates of the rock in the world f
 % Calculate the direction vector from the rover to the rock
 d = p_rock - p_rover; % Direction vector
 nd = d / norm(d); % Normalized to avoid numerical issues
+
 % Extract the direction of the rover's X-axis in the world frame 
 x_axis_rover = uvms.wTv(1:2,1);   % First column of the rotation matrix
+
+% Check if the x_vector is a versor, because exctract the firt two
+% components
+norm_x_rover = norm(x_axis_rover);
+if abs(norm_x_rover - 1) > 1e-6
+    % normalize the vector
+    x_axis_rover = x_axis_rover / norm_x_rover;
+end
 % Calculate the angle between the rover's X-axis and the direction to the rock
 uvms.angle = atan2(det([x_axis_rover, nd]), dot(x_axis_rover, nd));
 
