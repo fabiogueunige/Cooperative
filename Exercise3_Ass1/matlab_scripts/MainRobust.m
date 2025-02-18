@@ -5,7 +5,7 @@ close all
 addpath('./simulation_scripts');
 % Simulation variables (integration and final time)
 deltat = 0.005;
-end_time = 40;
+end_time = 25;
 loop = 1;
 maxloops = ceil(end_time/deltat);
 
@@ -58,7 +58,7 @@ uvms.wTg = [uvms.wRg uvms.goalPosition; 0 0 0 1];
 
 % defines the goal position for the vehicle position task
 uvms.vehicleGoalPosition = [10.5 37.5 -38]';
-uvms.wRgv = rotation(0, -0.06, 0.5);
+uvms.wRgv = rotation(0, 0.6, 0.5);
 uvms.wTgv = [uvms.wRgv uvms.vehicleGoalPosition; 0 0 0 1];
 
 % defines the tool control point
@@ -126,8 +126,8 @@ for t = 0:deltat:end_time
     % VP (vehicle position control: x, y, z; CONTROL TASK)
     [Qp, ydotbar] = iCAT_task(uvms.A.vp, uvms.J.vp, Qp, ydotbar, uvms.xdot.vp, 0.0001, 0.01, 10);
       
-    % % AC (vehicle attitude control: roll, pitch; CONTROL TASK)
-    % [Qp, ydotbar] = iCAT_task(uvms.A.ac, uvms.J.ac, Qp, ydotbar, uvms.xdot.ac, 0.0001, 0.01, 10);
+    % AC (vehicle attitude control: roll, pitch; CONTROL TASK)
+    [Qp, ydotbar] = iCAT_task(uvms.A.ac, uvms.J.ac, Qp, ydotbar, uvms.xdot.ac, 0.0001, 0.01, 10);
 
     % VA (vehicle aligning CONTROL TASK)
     [Qp, ydotbar] = iCAT_task(uvms.A.va, uvms.J.va, Qp, ydotbar, uvms.xdot.va, 0.0001, 0.01, 10);

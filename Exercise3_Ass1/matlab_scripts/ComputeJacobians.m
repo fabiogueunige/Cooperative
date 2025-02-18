@@ -36,22 +36,13 @@ uvms.J.t_v = [zeros(3) eye(3); eye(3) -skew(uvms.vTt(1:3,4))];
 % juxtapose the two Jacobians to obtain the global one
 uvms.J.t = [uvms.J.t_a uvms.J.t_v];
 
-% compute all the needed value for compute the jacobian when mission.phase == 2
-if (mission.phase == 2) % in thisncase the heading jacobian is different, aligning task 
-   k_w = [0; 0; 1];
-   d_w = (eye(3) - k_w * k_w') * (uvms.rock_center - uvms.wTv(1:3, 4)); % distance vector between rock and rover, projected on plane xy of world frame
-   nd_w = d_w / norm(d_w); % normalized distance, projected on world
-   x_v_w = (eye(3) - k_w * k_w') * uvms.wTv(1:3, 1);
-   uvms.rho_w = ReducedVersorLemma(nd_w, x_v_w); % rho = v * theta, projected on world frame 
-   rho_w = uvms.rho_w / norm(uvms.rho_w); % axis of rotation 
-end
 
 % MA veichle minimum altitude Jacobian
-w_kw = [0 0 1]'; % z-axis on world frame projected on world frame
-v_kw = uvms.vTw(1:3,1:3) * w_kw; % projection on vehicle frame
+w_kw = [0 0 1]'; % z-axis of world frame
+w_iv = uvms.wTv(1:3, 1);
 
 % vehicle minimum altitude Jacobian
-uvms.J.ma = [zeros(1,7) v_kw' zeros(1,3)];
+uvms.J.ma = [zeros(1,7) uvms.wTv(1:3, 3)' zeros(1,3)];
 
 % HA vehicle horizonal attitude Jacobian
 uvms.J.ha = [zeros(1,10) 1 0 0;
@@ -72,8 +63,15 @@ uvms.J.ac(1,11) = 1;
 uvms.J.ac(2,12) = 1;
 
 % VA veichle aligning jacobian
-if (mission.phase == 2)
-    J = rho_w' * [zeros(3, 7), (-1/(norm(d_w).^2)) * skew(d_w) * (eye(3) - uvms.wTv(1:3, 3) * uvms.wTv(1:3, 3)'), -eye(3)]; % one row
+if (mission.phase == 2) 
+    w_iv_xyplane = (eye(3) - w_kw * w_kw') * w_iv; % proyection of x axis of veichle on xy plane (world frame)
+    w_dw_xyplane = (eye(3) - w_kw * w_kw') * (uvms.rock_center - uvms.wTv(1:3, 4)); % distance vector between rock and rover, projected on plane xy of world frame
+    w_ndw_xyplane = w_dw_xyplane / norm(w_dw_xyplane); % normalized distance, projected xy axis (world frame)
+    
+    uvms.rho_w = ReducedVersorLemma(w_ndw_xyplane, w_iv_xyplane); % rho = v * theta, projected on world frame 
+    rho_w = uvms.rho_w / norm(uvms.rho_w); 
+    
+    J =  rho_w' * [zeros(3, 7), (-1/(norm(w_dw_xyplane).^2)) * skew(w_dw_xyplane), -eye(3)]; % one row
     uvms.J.va = J; 
 end
 
