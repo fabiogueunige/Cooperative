@@ -69,7 +69,7 @@ if (mission.phase == 2)
     w_ndw_xyplane = w_dw_xyplane / norm(w_dw_xyplane); % normalized distance, projected xy axis (world frame)
     
     uvms.rho_w = ReducedVersorLemma(w_ndw_xyplane, w_iv_xyplane); % rho = v * theta, projected on world frame 
-    rho_w = uvms.rho_w / norm(uvms.rho_w); 
+    rho_w = uvms.rho_w / norm(uvms.rho_w);
     
     J =  rho_w' * [zeros(3, 7), (-1/(norm(w_dw_xyplane).^2)) * skew(w_dw_xyplane), -eye(3)]; % one row
     uvms.J.va = J; 

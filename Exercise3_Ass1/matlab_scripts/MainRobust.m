@@ -58,7 +58,7 @@ uvms.wTg = [uvms.wRg uvms.goalPosition; 0 0 0 1];
 
 % defines the goal position for the vehicle position task
 uvms.vehicleGoalPosition = [10.5 37.5 -38]';
-uvms.wRgv = rotation(0, 0.6, 0.5);
+uvms.wRgv = rotation(0.6, 0.6, 0.9);
 uvms.wTgv = [uvms.wRgv uvms.vehicleGoalPosition; 0 0 0 1];
 
 % defines the tool control point
