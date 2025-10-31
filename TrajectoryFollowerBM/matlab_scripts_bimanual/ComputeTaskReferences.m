@@ -1,0 +1,126 @@
+function [pandaArm] = ComputeTaskReferences(pandaArm,mission,goal)
+    % Compute distance between tools for plotting
+    pandaArm.dist_tools = norm(pandaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4));
+
+    %% Compute minimum altitude reference ALWAYS = gain ((min_alt + delta) - altitude)
+    gain = 0.6; % our choice (constant)
+    gain_jl = 0.3;
+    gain_alt = 0.3;
+    gain_tool = 0.6;
+    gain_obj = 0.8;
+    delta = 0.05;
+    min_alt = 0.15; % guarda se vanno definiti fuori
+    
+    pandaArm.ArmL.xdot.alt = ((delta + min_alt) - pandaArm.ArmL.wTt(3,4)) * [0; 0; 0; 0; 0; gain_alt];% generate a positive velocity, according with x-axis, before minimum altitude task is inactive
+    pandaArm.ArmR.xdot.alt = ((delta + min_alt) - pandaArm.ArmR.wTt(3,4)) * [0; 0; 0; 0; 0; gain_alt];
+    
+    %% Compute joint limits task reference ALWAYS
+    % Create a velocity away from the limits => move to the middle between jlmax and jlmin
+
+    % joint limits corresponding to the actual Panda by Franka arm configuration
+    pandaArm.ArmL.xdot.jl (1:7, 1) = gain_jl .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.ArmL.q);
+    pandaArm.ArmR.xdot.jl (8:14, 1) = gain_jl .* (((pandaArm.jlmax - pandaArm.jlmin)/2) - pandaArm.ArmR.q);
+    
+    %% PROVA INTEGRATORE
+    %persistent integrated_error_L;
+
+    %if isempty(integrated_error_L)
+    %integrated_error_L = zeros(6,1); % Inizializza l'errore integrato a zero
+    %end
+
+    dt = 0.005; % Tempo di campionamento (modificare in base alla frequenza del ciclo)
+    gain_I = 0.001; % Guadagno integrativo (modificare in base alle prestazioni desiderate)
+
+    %%
+    
+    switch mission.phase
+        case 1 
+            % Reach the grasping point
+            % LEFT ARM
+            % -----------------------------------------------------------------
+            % Tool position and orientation task reference
+            [ang, lin] = CartError(pandaArm.ArmL.wTg, pandaArm.ArmL.wTt); % e.g. CartError(wTg, wTv) returns the error that makes <v> -> <g>
+                       
+            pandaArm.ArmL.xdot.tool = gain_tool * [ang; lin]; %+ pandaArm.ArmL.xdot.tool_I;
+
+            % limit the requested velocities...
+            pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
+            pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
+    
+            % RIGHT ARM
+            % -----------------------------------------------------------------
+            % Tool position and orientation task reference
+            [ang, lin] = CartError(pandaArm.ArmR.wTg, pandaArm.ArmR.wTt);
+           
+            pandaArm.ArmR.xdot.tool = gain_tool * [ang; lin];
+
+            % limit the requested velocities...
+            pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
+            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
+            
+        case 2 
+            % Perform the rigid grasp of the object and move it
+            % TRAJECTORY FOLLOWER MODE
+
+            % COMMON
+            % -----------------------------------------------------------------
+            % Rigid Grasp Constraint
+            % from theory:
+            % [pandaArm.ArmL.wJo - pandaArm.ArmR.wJo] * ydotbar = 0
+            % J * ydot = xdot --> xdot = 0
+            pandaArm.xdot.rc = zeros(6,1);
+
+            % TRAJECTORY FOLLOWER: Compute desired pose and velocity from trajectory
+            % -----------------------------------------------------------------
+            % Get current trajectory segment
+            [seg_idx, t_start, t_end, pose_start, pose_end] = ...
+                GetCurrentTrajectorySegment(goal.trajectory.time_in_phase, goal.trajectory);
+            
+            % Compute desired pose, velocity and acceleration at current time
+            [pose_desired, velocity_desired, ~] = ...
+                ComputeTrajectoryPoint(goal.trajectory.time_in_phase, t_start, t_end, pose_start, pose_end);
+            
+            % Store for debugging/plotting
+            goal.trajectory.pose_desired = pose_desired;
+            goal.trajectory.velocity_desired = velocity_desired;
+            
+            % LEFT ARM
+            % -----------------------------------------------------------------  
+            % Compute tracking error (desired pose - current object pose)
+            [ang, lin] = CartError(pose_desired, pandaArm.ArmL.wTo); 
+            
+            % Reference velocity = feedforward (desired velocity) + feedback (error correction)
+            % The gain acts on the error to bring the object back to the desired trajectory
+            pandaArm.ArmL.xdot.tool = velocity_desired + gain_obj * [ang; lin];
+
+            % limit the requested velocities...
+            pandaArm.ArmL.xdot.tool(1:3) = Saturate(pandaArm.ArmL.xdot.tool(1:3,:), 2);
+            pandaArm.ArmL.xdot.tool(4:6) = Saturate(pandaArm.ArmL.xdot.tool(4:6,:), 2);
+    
+            % RIGHT ARM
+            % -----------------------------------------------------------------
+            % Same reference for right arm (rigid grasp assumption)
+            [ang, lin] = CartError(pose_desired, pandaArm.ArmR.wTo);
+            pandaArm.ArmR.xdot.tool = velocity_desired + gain_obj * [ang; lin];
+
+            % limit the requested velocities...
+            pandaArm.ArmR.xdot.tool(1:3) = Saturate(pandaArm.ArmR.xdot.tool(1:3,:), 2);
+            pandaArm.ArmR.xdot.tool(4:6) = Saturate(pandaArm.ArmR.xdot.tool(4:6,:), 2);
+    
+        case 3
+             % Stop any motions
+             % LEFT ARM
+             % -----------------------------------------------------------------
+             % Tool position and orientation task reference
+            pandaArm.ArmL.xdot.tool(1:3) = zeros(3,1);
+            pandaArm.ArmL.xdot.tool(4:6) = zeros(3,1);
+
+            % RIGHT ARM
+            % -----------------------------------------------------------------
+            % Tool position and orientation task reference
+            pandaArm.ArmR.xdot.tool(1:3) = zeros(3,1);
+            pandaArm.ArmR.xdot.tool(4:6) = zeros(3,1);
+    end
+
+
+    end
