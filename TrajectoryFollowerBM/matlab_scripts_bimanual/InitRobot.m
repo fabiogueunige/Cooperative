@@ -72,37 +72,81 @@ function [pandaArm, goal] = InitRobot(model,wTb_left,wTb_right)
 
     pandaArm.ArmL.xdot.tool = [];
     pandaArm.ArmR.xdot.tool = [];
+        
+    %% TRAJECTORY SELECTION: Choose trajectory type
+    trajectory_option = 'B';  % 'A' or 'B'
     
-    % Define goals (mantenuto per compatibilità, ma ora usiamo trajectory)
-    goal.wTog(1:4, 1:4, 1) = eye(4);
-    goal.wTog(1:4, 1:4, 2) = eye(4);
-    goal.wTog(1:4, 1:4, 3) = eye(4);
-    goal.wTog(1:4, 1:4, 4) = eye(4);
-
-    goal.wTog(1:3, 4, 1) = [0.70, -0.35, 0.50]';
-    goal.wTog(1:3, 4, 2) = [0.5, -0.35, 0.50]';
-    goal.wTog(1:3, 4, 3) = [0.50, -0.35, 0.15]';
-    goal.wTog(1:3, 4, 4) = [0.70, -0.35, 0.30]';
-    goal.n_goal = 4;
-
-    % TRAJECTORY FOLLOWER: Define trajectory with timing
-    % Each waypoint has a specific time associated
-    goal.trajectory.n_waypoints = 4;
-    goal.trajectory.poses = zeros(4, 4, goal.trajectory.n_waypoints);
-    goal.trajectory.times = zeros(1, goal.trajectory.n_waypoints);
-    
-    % Define waypoint poses (same as goals)
-    for i = 1:goal.trajectory.n_waypoints
-        goal.trajectory.poses(:, :, i) = goal.wTog(:, :, i);
+    if strcmp(trajectory_option, 'A')
+        %% OPTION A: CIRCULAR TRAJECTORY
+        % Create waypoints along a circle in the horizontal plane
+        
+        n_points = 8;  % 8 waypoint lungo il cerchio
+        goal.trajectory.n_waypoints = n_points;
+        goal.trajectory.poses = zeros(4, 4, n_points);
+        goal.trajectory.times = zeros(1, n_points);
+        
+        % Parametri del cerchio
+        % Centro del cerchio nello spazio di lavoro
+        center = [0.5, -0.2, 0.4]';  % Centro a (x=0.5, y=-0.2, z=0.4)
+        radius = 0.15;  % Raggio di 15 cm
+        total_time = 40.0;  % 40 secondi per completare il cerchio
+        
+        % Crea i waypoint lungo il cerchio
+        for i = 1:n_points
+            % Angolo per questo waypoint (distribuiti uniformemente sul cerchio)
+            theta = 2*pi*(i-1)/(n_points-1);
+            
+            % Posizione sul cerchio (cerchio nel piano XY)
+            x = center(1) + radius*cos(theta);
+            y = center(2) + radius*sin(theta);
+            z = center(3);  % Altezza costante
+            
+            % Creare la posa (identità per l'orientamento)
+            goal.trajectory.poses(:, :, i) = eye(4);
+            goal.trajectory.poses(1:3, 4, i) = [x; y; z];
+            
+            % Tempo uniforme lungo il cerchio
+            goal.trajectory.times(i) = total_time * (i-1)/(n_points-1);
+        end
+        
+        disp('=== TRAJECTORY A: Circular trajectory selected ===');
+        
+    elseif strcmp(trajectory_option, 'B')
+        %% OPTION B: LINEAR TRAJECTORY (stessa path following)
+        % 4 waypoints forming a square path with varying heights
+        
+        goal.trajectory.n_waypoints = 4;
+        goal.trajectory.poses = zeros(4, 4, goal.trajectory.n_waypoints);
+        goal.trajectory.times = zeros(1, goal.trajectory.n_waypoints);
+        
+        % Define waypoint poses (4 corners of a path)
+        % Waypoint 1: Starting position
+        goal.trajectory.poses(:, :, 1) = eye(4);
+        goal.trajectory.poses(1:3, 4, 1) = [0.70, -0.35, 0.50]';
+        
+        % Waypoint 2: Move to the side
+        goal.trajectory.poses(:, :, 2) = eye(4);
+        goal.trajectory.poses(1:3, 4, 2) = [0.5, -0.35, 0.50]';
+        
+        % Waypoint 3: Lower down
+        goal.trajectory.poses(:, :, 3) = eye(4);
+        goal.trajectory.poses(1:3, 4, 3) = [0.50, -0.35, 0.15]';
+        
+        % Waypoint 4: Move forward and up
+        goal.trajectory.poses(:, :, 4) = eye(4);
+        goal.trajectory.poses(1:3, 4, 4) = [0.70, -0.35, 0.30]';
+        
+        % Define timing for each waypoint (absolute times in seconds)
+        goal.trajectory.times(1) = 0.0;   
+        goal.trajectory.times(2) = 20.0;  
+        goal.trajectory.times(3) = 30.0;  
+        goal.trajectory.times(4) = 45.0;   
+        
+        disp('=== TRAJECTORY B: Linear trajectory selected ===');
+        
+    else
+        error('Invalid trajectory_option! Use ''A'' or ''B''');
     end
-    
-    % Define timing for each waypoint (absolute times in seconds)
-    % Times are chosen to give smooth motion between waypoints
-    % Adjust these values based on desired speed
-    goal.trajectory.times(1) = 0.0;   % Start immediately after phase 1
-    goal.trajectory.times(2) = 15.0;  % Reach second waypoint after 15s
-    goal.trajectory.times(3) = 30.0;  % Reach third waypoint after 30s
-    goal.trajectory.times(4) = 45.0;  % Reach fourth waypoint after 45s
     
     % Total trajectory duration
     goal.trajectory.duration = goal.trajectory.times(end);
