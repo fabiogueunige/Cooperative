@@ -85,7 +85,7 @@ function [pose, velocity, acceleration] = ComputeTrajectoryPoint(t_current, t_st
         omega = zeros(3,1);
         omega_dot = zeros(3,1);
     else
-        % Rodrigues' rotation formula
+        % Rodrigues rotation formula
         K = skew(omega_axis);
         R_interp = eye(3) + sin(theta_interp)*K + (1-cos(theta_interp))*K^2;
         R = R_start * R_interp;

@@ -1,6 +1,4 @@
 function [segment_idx, t_start, t_end, pose_start, pose_end] = GetCurrentTrajectorySegment(t_current, trajectory)
-% GetCurrentTrajectorySegment - Finds the current trajectory segment based on time
-%
 % Inputs:
 %   t_current: current time
 %   trajectory: structure containing waypoints and timing
@@ -9,11 +7,11 @@ function [segment_idx, t_start, t_end, pose_start, pose_end] = GetCurrentTraject
 %               .n_waypoints: number of waypoints
 %
 % Outputs:
-%   segment_idx: index of current segment (1 to n_waypoints-1)
+%   segment_idx: index of current segment
 %   t_start: start time of current segment
 %   t_end: end time of current segment
-%   pose_start: 4x4 homogeneous transformation at segment start
-%   pose_end: 4x4 homogeneous transformation at segment end
+%   pose_start: homogeneous transformation at segment start
+%   pose_end: homogeneous transformation at segment end
 
     % Find which segment we are in
     segment_idx = 1;

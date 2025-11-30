@@ -1,6 +1,6 @@
 # 🤖 Trajectory Follower - Sistema di Manipolazione Cooperativa Bimanuale
 
-Sistema di controllo per manipolazione cooperativa con due bracci Panda Franka, trasformato da **Path Follower** a **Trajectory Follower**.
+Sistema di controllo per manipolazione cooperativa con due bracci Panda Franka, trasformato con **Trajectory Follower**.
 
 ---
 
@@ -23,24 +23,6 @@ Sistema di controllo per manipolazione cooperativa con due bracci Panda Franka, 
 
 ---
 
-## 🚀 Quick Start
-
-### 1. Test Rapido
-```matlab
-% Testa le funzioni del trajectory follower
-test_trajectory_follower
-```
-
-### 2. Esecuzione Simulazione
-```matlab
-% Esegui la simulazione completa
-main
-```
-
-### 3. Personalizzazione
-Vedi `ESEMPI_TRAIETTORIA.m` per 10 esempi di personalizzazione.
-
----
 
 ## 📁 Struttura Progetto
 
@@ -54,34 +36,6 @@ Vedi `ESEMPI_TRAIETTORIA.m` per 10 esempi di personalizzazione.
 - **ComputeTrajectoryPoint.m** - Interpolazione polinomiale quintica
 - **GetCurrentTrajectorySegment.m** - Gestione segmenti di traiettoria
 
-### Documentazione
-- **INDICE_DOCUMENTAZIONE.md** ⭐ Indice completo
-- **RIEPILOGO_TRASFORMAZIONE.md** - Cosa è cambiato
-- **TRAJECTORY_FOLLOWER_README.md** - Documentazione tecnica completa
-- **CONFRONTO_PATH_VS_TRAJECTORY.md** - Analisi comparativa
-- **ESEMPI_TRAIETTORIA.m** - 10 esempi pratici
-- **SCHEMI_ARCHITETTURA.m** - Schemi del sistema
-- **test_trajectory_follower.m** - Script di test automatico
-
----
-
-## 📖 Documentazione
-
-### Per Iniziare
-1. **INDICE_DOCUMENTAZIONE.md** - Indice completo di tutta la documentazione
-2. **RIEPILOGO_TRASFORMAZIONE.md** - Panoramica delle modifiche
-3. **test_trajectory_follower.m** - Testa il sistema
-
-### Documentazione Tecnica
-- **TRAJECTORY_FOLLOWER_README.md** - Spiegazione completa del sistema
-- **SCHEMI_ARCHITETTURA.m** - Schemi e diagrammi
-
-### Guide Pratiche
-- **ESEMPI_TRAIETTORIA.m** - Come personalizzare la traiettoria
-- **CONFRONTO_PATH_VS_TRAJECTORY.md** - Differenze e performance
-
----
-
 ## 🔧 Configurazione Base
 
 ### Modificare la Velocità del Movimento
@@ -89,9 +43,9 @@ Vedi `ESEMPI_TRAIETTORIA.m` per 10 esempi di personalizzazione.
 In `InitRobot.m`, modifica i tempi dei waypoint:
 ```matlab
 goal.trajectory.times(1) = 0.0;   % Inizio
-goal.trajectory.times(2) = 15.0;  % ← Modifica questo
-goal.trajectory.times(3) = 30.0;  % ← Modifica questo
-goal.trajectory.times(4) = 45.0;  # ← Modifica questo
+goal.trajectory.times(2) = 15.0;  
+goal.trajectory.times(3) = 30.0;  
+goal.trajectory.times(4) = 45.0;  
 ```
 - Valori più alti = movimento più lento
 - Valori più bassi = movimento più veloce
@@ -268,13 +222,6 @@ Test eseguiti:
 
 ---
 
-## 📚 Risorse Aggiuntive
-
-- **Teoria**: Interpolazione polinomiale, SLERP, feedforward control
-- **Paper**: Trajectory planning, cooperative manipulation
-- **Framework**: iCAT (intermediate Control Actions Task)
-
----
 
 ## 📞 Supporto
 
@@ -292,18 +239,6 @@ Questo progetto è sviluppato per scopi educativi e di ricerca.
 ---
 
 ## ✨ Autori
-
-Sistema trasformato da Path Follower a Trajectory Follower
 - **Data**: Ottobre 2025
 - **Versione**: 1.0
 
----
-
-## 🎯 Prossimi Passi
-
-1. **Testa il sistema**: Esegui `test_trajectory_follower.m`
-2. **Esegui la simulazione**: Lancia `main.m`
-3. **Personalizza**: Modifica i parametri secondo le tue esigenze
-4. **Leggi la documentazione**: Consulta `INDICE_DOCUMENTAZIONE.md`
-
-**Buon lavoro con il Trajectory Follower! 🚀**

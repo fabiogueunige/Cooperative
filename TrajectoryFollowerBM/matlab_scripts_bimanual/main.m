@@ -269,8 +269,8 @@ for t = 0:dt:Tf
             loop = loop + 1;
 
             % TRAJECTORY FOLLOWER DEBUG
-            % disp("Trajectory time: " + goal.trajectory.time_in_phase);
-            % disp("Current segment: " + goal.trajectory.current_segment);
+            disp("Trajectory time: " + goal.trajectory.time_in_phase);
+            disp("Current segment: " + goal.trajectory.current_segment);
             
             distance_x(loop) = pandaArm.ArmL.wTt(1, 4) - pandaArm.ArmR.wTt(1, 4);
             traiettoria_L(:, loop) = pandaArm.ArmL.wTo(1:3, 4);
