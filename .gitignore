@@ -5,6 +5,3 @@ Simulator/**
 *.asv
 robustsim/
 robustsim/**
-TrajectoryFollowerBM/docs/**
-TrajectoryFollowerBM/matlab_scripts_bimanual/more/**
-TrajectoryFollowerBM/matlab_scripts_bimanual/test/**

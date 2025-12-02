@@ -33,7 +33,8 @@ function [pose, velocity, acceleration] = ComputeTrajectoryPoint(t_current, t_st
         s = 1; % If duration is zero, jump to end
     end
     
-    % Quintic polynomial coefficients (boundary conditions: zero velocity and acceleration at endpoints)
+    % Quintic polynomial coefficients
+    % zero vel and acc at endpoints
     % s(τ) = 10τ³ - 15τ⁴ + 6τ⁵
     % ds/dτ = 30τ² - 60τ³ + 30τ⁴
     % d²s/dτ² = 60τ - 180τ² + 120τ³
@@ -47,7 +48,7 @@ function [pose, velocity, acceleration] = ComputeTrajectoryPoint(t_current, t_st
     p_dot = s_vel * (p_end - p_start);
     p_ddot = s_acc * (p_end - p_start);
     
-    % SLERP (Spherical Linear Interpolation) for orientation
+    % SLERP (Spherical Linear Interpolation
     % Find rotation from start to end
     R_delta = R_start' * R_end;
     

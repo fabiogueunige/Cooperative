@@ -13,7 +13,6 @@ function [segment_idx, t_start, t_end, pose_start, pose_end] = GetCurrentTraject
 %   pose_start: homogeneous transformation at segment start
 %   pose_end: homogeneous transformation at segment end
 
-    % Find which segment we are in
     segment_idx = 1;
     for i = 1:(trajectory.n_waypoints - 1)
         if t_current >= trajectory.times(i) && t_current <= trajectory.times(i+1)
@@ -22,7 +21,6 @@ function [segment_idx, t_start, t_end, pose_start, pose_end] = GetCurrentTraject
         end
     end
     
-    % Clamp to valid range
     segment_idx = max(1, min(segment_idx, trajectory.n_waypoints - 1));
     
     % Extract segment information
